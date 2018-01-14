@@ -232,9 +232,8 @@ func main() {
 ### Output
 > archive/tar: write too long
 > 生成一个 tar 档案
-
 >> 注释掉 io 包 和 后面 archive-tar.md 至最后 会生成一个无法打开的文件
-
+>>
 >> archive-tar.md 换成 README.md 则一切正常
 
 
