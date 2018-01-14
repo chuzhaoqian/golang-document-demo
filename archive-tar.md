@@ -97,6 +97,49 @@ func (tr *Reader)Read(b []byte)(n int, err error)
 ```
 > 从 tar 档案文件的当前记录读取数据，到达记录末端时返回 (0, io.EOF),直到调用 Next 方法转入一下记录。
 
+### Example
+```golang
+import (
+	"archive/tar"
+	"fmt"
+	"io"
+	"os"
+)
+
+func main() {
+	f, err := os.Open("test.tar")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+	r := tar.NewReader(f)
+	for hdr, err := r.Next(); err != io.EOF; hdr, err = r.Next() {
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fileinfo := hdr.FileInfo()
+		fmt.Println(fileinfo.Name())
+		f, err := os.Create("test/" + fileinfo.Name())
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer f.Close()
+		_, err = io.Copy(f, r)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+```
+### Output
+> README.md
+
+> open test/README.md: The system cannot find the path specified.
+
+> invalid argument
+
 ## type Writer
 ```go
 type Writer struct{
@@ -189,7 +232,9 @@ func main() {
 ### Output
 > archive/tar: write too long
 > 生成一个 tar 档案
+
 >> 注释掉 io 包 和 后面 archive-tar.md 至最后 会生成一个无法打开的文件
+
 >> archive-tar.md 换成 README.md 则一切正常
 
 
