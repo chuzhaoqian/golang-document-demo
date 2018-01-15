@@ -4,6 +4,8 @@
 import "crypto"
 ```
 > crypto 包搜集了常用的密码(算法)常量。
+>
+> 没发现这个包的具体应用，似乎在其他 crypto 包中都有实现。
 
 ## type PublicKey
 ```go
