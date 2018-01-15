@@ -32,7 +32,7 @@ const(
 	SHA256
 	SHA384
 	SHA512
-	MD%SHA1
+	MD5SHA1
 	RIPEMD160
 )
 ```
