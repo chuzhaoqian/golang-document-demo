@@ -46,3 +46,145 @@ func RegisterCompressor(method uint16, comp Compressor)
 func RegisterDecompressor(method uint16, d Decompressor)
 ```
 > RegisterDecompressor 使用指定的方法 ID 注册一个 Decompressor 类型的函数。 
+
+## type FileHeader
+```go
+type FileHeader{
+	Name string
+	CreatorVersion uint16
+	ReaderVersion uint16
+	Flags uint16
+	Method uint16
+	ModifiedTime uint16
+	ModifiedDate uint16
+	CRC32 uint32
+	CompressedSize uint32	//弃用
+	UncompressedSize uint32		//弃用
+	CompressedSize64 uint64
+	UncompressedSize64 uint64
+	Extra []byte
+	ExternalAttrs uint32
+	Comment string
+}
+```
+> FileHeader 描述 zip 文件中的一个文件。
+
+## func FileInfoHeader
+```go
+func FileInfoHeader(fi os.FileInfo)(*FileHeader, error)
+```
+> FileInoHeader 返回一个根据 fi 填写了部分字段的 Header。因为 os.FileInfo 接口的 Name 方法只返回它描述的文件的无路径名，有可能需要将返回值的 Name 字段修改为文件的完整路径名。
+
+## func (*FileHeader)FileIno
+```go
+func (h *FileHeader)FileInfo() os.FileInfo
+```
+> FileInfo 返回一个根据 h *FileHeader 的信息生成的 os.FFileInfo。
+
+## func (h *FileHeader)Mode
+```go
+func (h *FileHeader) Mode()(Mode os.FileMode)
+```
+> Mode 返回 h *FileHeader 的权限和模式位。
+
+## func (h *FileHeader)SetMode
+```go
+func (h *FileHeader)SetMode(mode os.FileMode)
+```
+> SetMode 修改 h *FileHeader 的权限和模式位
+
+## func （h *FileHeader）ModTime
+```go
+func (h *FileHeader)ModTime() time.Time
+```
+> 返回最后一次修改的 UTC 时间。(精度 2s)
+
+## func (h *FileHeader)SetModTime
+```go
+func (h *FileHeader)SetModTime(t thim.Time)
+```
+> 将 ModifiedTime 和 ModifiedDate 字段设置为指定的 UTC 时间。(精度 2s)
+
+## type File
+```go
+type File struct{
+	FileHeader
+	// 内含隐藏或非导出字段
+}
+```
+## func (*File)DataOffset
+```go
+func (f *File)DataOffset()(offset int64,err error)
+```
+> DataOffset 返回文件的可能存在的压缩数据相对于 zip 文件起始的偏移量。大多数调用者使用的 Open 代替，该方法会主动解压缩数据并验证。
+
+## func (*file)Open
+```go
+func (f *File)Open()(rc io.ReadCloser, err error)
+```
+> Open 方法返回一个 io.ReadCloser 接口，提供读取文件内容的方法。可以同时读取多个文件。
+
+## type Reader
+```go
+type Reader struct{
+	File []*File
+	Comment string
+}
+```
+
+## func NewReader
+```go
+func NewReader(r io.ReaderAt, size int64)(*Reader, error)
+```
+> NewReader 返回一个从 r io.ReaderAt 读取数据的 *Reader, r 被假设其大小为 size 字节。
+
+## type ReadCloser
+```go
+type ReadCloser struct {
+	Reader
+	//
+}
+```
+
+## func OpenReader
+```go
+func OpenReader(name string)(*ReadCloser, error)
+```
+> OpenReader 会打开 name 指定的 zip 文件并返回一个 *ReadCloser。
+
+## func (*ReadCloser)Close
+```go
+func (*rc *ReadCloser)Close()error
+```
+> Close 关闭 zip 文件 ，使它不能用于 I/O。
+
+## type Writer
+```go
+type Writer struct{
+	//
+}
+```
+
+## func NewWriter
+```go
+func NewWriter(w io.Writer)*Writer
+```
+> NewWriter 创建并返回一个将 zip 文件写入 w 的 *Writer。
+
+## func (*Writer)CreateHeader
+```go
+func (w *Writer)CreateHeader(fh *FileHeader)(io.Writer, error)
+```
+> 使用给出的 *FileHeader 来作为文件的元数据添加一个文件进 zip 文件。 本方法返回一个 io.Writer 接口(用于写入新添加文件的内容)。新增文件的内容必须在下一次调用 CreateHeader,Create 或 Close 方法之前全部写入。
+
+## func (*Writer)Create
+```go
+func (w *Writer)Create(name string)(io.Writer, error)
+```
+> 使用给出的文件名添加一个文件进 zip 文件。本方法返回一个 io.Writer 接口(用户写入新添加文件的内容)。文件名必须是相对路径，不能以设备或斜杠开始，只接受/作为路径分割。新增文件的内容必须在下一次调用 CreateHeader、Create 或 Close 方法zhi钱全部写入。
+
+## func (*Writer)Close
+```go
+func (w *Writer)Close()error
+```
+> Close 关闭该 *Writer。 本方法不会也没办法关闭下层的 io.Writer 接口。
