@@ -207,3 +207,94 @@ type ReadWriter struct{
 }
 ```
 > ReaderWriter 类型保管了 指向 Reader 和 Writer 类型的指针， 因此实现了 io.ReadWriter 接口。
+
+## func NewReadWriter
+```go
+func NewReadWriter(r *Reader, w *Writer)*ReadWriter
+```
+> NewReadWriter 创建一个新的、将读写操作分派个 r 和 w 的 ReadeWriter。
+
+## type SplitFunc
+```go
+type SplitFunc func(data []byte, atEOF bool)(advance int, token []byte, err error)
+```
+> SplitFunc 类型代表用于对输出做分词分析的分割函数。
+>
+> 参数 data 是尚未处理的数据的一个开始部分的切片， 参数 atEOF 表示是否 Reader 接口不能提供更多的数据。返回值是分析未知前进的字节数，将要返回给调用者的 token 切片，以及可能遇到的错误。如果数据不足以(保证)生成一个完整的 token，例如需要一整行数据但 data 里没有换行符，SplitFunc 可以返回(0, nil, nil)来告诉 Scanner 读取更多的数据写入切片然后用从不同一起始、长度更长的切片再试一次(调用 SplitFunc 类型函数)。
+>
+> 如果返回值 err 非 nil,扫描将终止并将该错误并返回给 Scanner 的调用者。
+>
+> 除非 atEOF 为真，永远不会使用空切片 data 调用 SplitFunc 类型行数。如果 atEOF 为真，data 却可能是非空的、且包含未处理的文本。
+
+
+## func ScanBytes
+```go
+func ScanBytes(data []byte, atEOF bool)(advance int, token []byte, err error)
+```
+> ScanBytes 是用于 canner 类型的分割函数(符合 SplitFunc),会将每个字节作为一个 token 返回。
+
+## func ScanRunes
+```go
+func ScanRunes(data []byte, atEOF bool)(advance int, token []byte, err error)
+```
+> ScanRunes 是用于 Scanner 类型的分割函数(符合 SplitFunc),会将每个 utf-8 编码的 unicode 作为一个 token 返回。返回的 rune 序列和 range 一个字符串的输出 rune 序列相同。错误的 utf-8 编码会翻译为 U+FFFD = "\xef\xbf\xbd",但只会消耗一个字节。调用者无法区分正确编码的 rune 和错误的编码 rune。
+
+## func ScanWords
+```go
+func ScanWords(data []byte, atEOF bool)(advance int, token []byte, err error)
+```
+> ScanWords 适用于 Scanner 类型的分割函数(符合 SplitFunc),本函数会将空白(unicode.IsSpace)分割的片段(去掉前后空白后)作为一个 tokern 返回。本函数永远不会返回空字符串。
+
+## func ScanLines
+```go
+func ScanLines(data []byte, atEOF bool)(advance int, token []byte, err error)
+```
+> ScanLine 是用于 Scanner 类型的分割函数(符合 SplitFunc),会将每一行文本去掉末尾的换行标记作为一个 token 返回。返回的行可以是空字符串。换行标记为一个可选的回车后跟一个必选的换行符。最后一行即使没有换行符也会作为一个 token 返回。
+
+## type Scanner
+```go
+type Scanner struct {
+	//
+}
+```
+> Scanner 类型提供了方便的读取数据的接口，如从换行分割的文本里读取每一行。
+>
+> 成功调用的 Scan 方法会逐步提供文件的 token,跳过 token 之间的字节。token 由 SplitFunc 类型的分割函数指定；默认的分割函数会将输入分割为多个行，并且去掉行尾的汉航标识。可以定制自己的分割函数。
+>
+> 扫描会在抵达输入流结尾、遇到的第一个I/O错误、token过大不能保存进缓冲时，不可恢复的停止。当扫描停止后，当前读取位置可能会远在最后一个获得的token后面。需要更多对错误管理的控制或token很大，或必须从reader连续扫描的程序，应使用bufio.Reader代替
+
+## func NewScanner
+```go
+func NewScanner(r io.Reader)*Scanner
+```
+> NewScanner 创建并返回一个从 r io.Reader 读取数据的Scanner,默认的分割函数是 ScanLines。
+
+## func (*Scanner)Split
+```go
+func (s *Scanner)Split(split SplitFunc)
+```
+> Split 设置该 Scanner 的分割函数。本方法必须在 Scan 之前调用。
+
+## func (*Scanner)Scan
+```go
+func (s *Scanner)Scan()bool
+```
+> Scan 方法获取当前位置的 token (该 token 可以通过 Bytes 或 Text 方法获得)，并让 Scanner 的扫描未知移动到下一个 token。当扫描因为抵达输入流结尾或遇到错误而停止时，本方法会返回 false。在 Scan 方法返回 false 后，Err 方法将会返回扫描时遇到的任何错误；除非是 io.EOF，此时 Err 会返回 nil。
+
+## func (*Scanner)Bytes
+```go
+func (s *Scanner)Bytes()[]byte
+```
+> Bytes 方法返回最后一次 Scan 调用生成的 token。底层数组指向的数据可能会被下一次 Scan 的调用重写。
+
+## func (*Scanner)Text
+```go
+func (s *Scanner)Text()string
+```
+> Text 返回最后一次 Scan 调用生成的 token,会申请创建一个字符串保存 token 并返回该字符串。
+
+## func (*Scanner)Err
+```go
+func (s *Scanner)Err()error
+```
+> Err 返回 Scanner 遇到的第一个非 EOF 的错误。
