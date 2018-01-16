@@ -202,6 +202,8 @@ func (b *Writer)ReadFrom(r io.Reader)(n int64, err error)
 ## type ReadWriter
 ```go
 type ReadWriter struct{
-	
+	*Reader
+	*Writer
 }
 ```
+> ReaderWriter 类型保管了 指向 Reader 和 Writer 类型的指针， 因此实现了 io.ReadWriter 接口。
