@@ -36,12 +36,32 @@ type Reader struct{
 func NewReader(rd io.Reader)*Reader
 ```
 > NewReader 创建一个具有默认大小缓冲、从 rd io.Reader 读取的 *Reader。
+>
+> 相当于 NewReaderSize(rd io.Reader, 4096)
 
 ## func NewReaderSize
 ```go
 func NewReaderSize(rd io.Reader, size int)*Reader
 ```
 > NewReaderSize 创建一个具有最小有 size 尺寸的缓冲、从 rd io.Reader 读取的 *Reader。如果参数 rd io.Reader 已经是一个具有足够大缓冲的 *Reader 类型值，会返回 rd io.RReader。
+
+### Example
+```go
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"strings"
+)
+
+func main() {
+	s := strings.NewReader("")
+	fmt.Println("strings NewReader:", s)
+	br := bufio.NewReader(s)
+	fmt.Println("bufio NewReader:", br)
+}
+```
 
 ## func (*reader)Reset
 ```go
@@ -67,6 +87,33 @@ func (br *Reader)Read(p []byte)(n int, err error)
 ```
 > Read 读取数据写入 p []byte。本方法返回写入 p 的字节数。本方法一次调用最多会调用下层 Reader 接口一次 Read 方法，因此返回值 n 可能小于 len(p)。读取到达结尾时，返回 n 将为0而 err 将为 io.EOF。
 
+### Example
+```go
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"strings"
+)
+
+func main() {
+	s := strings.NewReader("123456")
+	fmt.Println("strings NewReader:", s)
+	br := bufio.NewReader(s)
+	fmt.Println("bufio NewReader:", br)
+
+	b, _ := br.Peek(5)
+	fmt.Println("Peek:", b)
+
+	bRead := make([]byte, 20)
+	fmt.Println("初始一个空的 byte 切片：", bRead)
+	n, _ := br.Read(bRead)
+	fmt.Printf("读取后：%s\n", bRead)
+	fmt.Println("读取", n, "个")
+}
+```
+
 ## func (*Reader)ReadByte
 ```go
 func (br *Reader)ReadByte()(c byte, wrr wrror)
@@ -78,6 +125,38 @@ func (br *Reader)ReadByte()(c byte, wrr wrror)
 func (br *Reader)UnreadByte()error
 ```
 > UnreadByte 吐出最近一次读取操作读取的最后一个字节。(只能吐出最后一个，多次调用会出问题)
+
+### Example
+```go
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"strings"
+)
+
+func main() {
+	s := strings.NewReader("123456")
+	br := bufio.NewReader(s)
+	fmt.Println("bufio NewReader:", br)
+
+	c, _ := br.ReadByte()
+	fmt.Println(c)
+
+	c2, _ := br.ReadByte()
+	fmt.Println(c2)
+
+	br.UnreadByte()
+
+	c3, _ := br.ReadByte()
+	fmt.Println(c3)
+
+	//	多次调用没看出有什么错误
+	//	br.UnreadByte()
+	//	br.UnreadByte()
+}
+```
 
 ## func (*Reader)ReadRune
 ```go
@@ -124,6 +203,28 @@ func (br *Reader) ReadString(delim byte) (line string, err error)
 func (b *Reader)WriteTo(w io.Writer)(n int64, err error)
 ```
 > WriteTo 方法实现了 io.WriterTo 接口。
+
+### Example
+```go
+package main
+
+import (
+	"bufio"
+	"bytes"
+	"fmt"
+	"strings"
+)
+
+func main() {
+	s := strings.NewReader("123456")
+	br := bufio.NewReader(s)
+	b := bytes.NewBuffer(make([]byte, 0))
+
+	br.WriteTo(b)
+	fmt.Printf("%s\n", b)
+}
+```
+
 
 ## type Writer
 ```go
