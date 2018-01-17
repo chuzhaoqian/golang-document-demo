@@ -246,6 +246,45 @@ func NewWriterSize(w io.Writer, size int)*Writer
 ```
 > NewWriterSize 创建一个具有最少有 size 尺寸的缓冲、写入 w io.Writer 的 *Writer。如果参数 w io.Writer 已经是一个具有足够大缓冲的 *Writer 类型值，会返回 w io.Writer。
 
+### Example
+```go
+package main
+
+import (
+	"bufio"
+	"bytes"
+	"fmt"
+)
+
+func main() {
+	b := bytes.NewBuffer(make([]byte, 0))
+
+	bw := bufio.NewWriter(b)
+	fmt.Println(bw.Available()) // 剩余缓存 4096
+	fmt.Println(bw.Buffered())  // 使用了多少个缓存
+
+	bw.Write([]byte("1"))
+	fmt.Println(bw.Available()) // 剩余缓存 4095
+	fmt.Println(bw.Buffered())  // 1
+
+	fmt.Println("Flush 前", b) // ""
+	bw.Flush()
+	fmt.Println("Flush 后", b) // 这时候 Available Buffered重置
+
+	fmt.Println(bw.Available()) // 剩余缓存 4096
+	fmt.Println(bw.Buffered())  // 使用了多少个缓存
+	bw.Write([]byte("2"))       // 可以继续使用
+	bw.WriteString("3")         // 可以继续使用
+	bw.WriteByte('4')           // byte 单引号
+	bw.Flush()
+	fmt.Println("Flush 后", b) // Flush 后 123
+
+	bws := bufio.NewWriterSize(b, 6)
+	fmt.Println(bws.Available()) // 6
+	fmt.Println(bws.Buffered())  // 0
+}
+```
+
 ## func (*Writer)Reset
 ```go
 func (b *Writer)Reset(w io.Writer)
@@ -300,6 +339,28 @@ func (b *Writer)ReadFrom(r io.Reader)(n int64, err error)
 ```
 > ReadFrom 实现了 io.ReaderFrom 接口。
 
+### Example
+```go
+package main
+
+import (
+	"bufio"
+	"bytes"
+	"fmt"
+	"strings"
+)
+
+func main() {
+	b := bytes.NewBuffer(make([]byte, 0))
+	s := strings.NewReader("go 语言")
+
+	bw := bufio.NewWriter(b)
+	bw.ReadFrom(s) // 无需调用 Flush
+
+	fmt.Println(b)
+}
+```
+
 ## type ReadWriter
 ```go
 type ReadWriter struct{
@@ -314,6 +375,35 @@ type ReadWriter struct{
 func NewReadWriter(r *Reader, w *Writer)*ReadWriter
 ```
 > NewReadWriter 创建一个新的、将读写操作分派个 r 和 w 的 ReadeWriter。
+
+### Example
+```go
+package main
+
+import (
+	"bufio"
+	"bytes"
+	"fmt"
+	"strings"
+)
+
+func main() {
+	b := bytes.NewBuffer(make([]byte, 0))
+	bw := bufio.NewWriter(b)
+
+	s := strings.NewReader("123")
+	br := bufio.NewReader(s)
+
+	rw := bufio.NewReadWriter(br, bw)
+
+	p, _ := rw.ReadString('\n')
+	fmt.Println(string(p))
+
+	rw.WriteString("asdf")
+	rw.Flush()
+	fmt.Println(b)
+}
+```
 
 ## type SplitFunc
 ```go
