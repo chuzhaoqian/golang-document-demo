@@ -372,6 +372,39 @@ func Join(s [][]byte, sep []byte) []byte
 ```
 > 将一系列[]byte切片连接为一个[]byte切片，之间用sep来分隔，返回生成的新切片。
 
+### Example
+```go
+package main
+
+import (
+	"bytes"
+	"fmt"
+)
+
+func main() {
+	s := " i am golang "
+	b := []byte(s)
+	fmt.Printf("%s \n", bytes.Repeat(b, 2))
+	b1 := bytes.Replace(b, []byte("golang"), []byte("GoLang"), -1)
+	fmt.Printf("%s \n", b1)
+	fmt.Printf("%s| \n", b)
+	fmt.Printf("%s| \n", bytes.Trim(b, " "))
+	fmt.Printf("%s| \n", b)
+	fmt.Printf("%s| \n", bytes.TrimSpace(b))
+	//	fmt.Printf("%s| \n", b)
+	fmt.Printf("%s| \n", bytes.TrimLeft(b, " i"))
+
+	// bytes.TrimPrefix 和 bytes.TrimLeft 在处理结果上回不同
+	fmt.Printf("%s| \n", bytes.TrimPrefix(b, []byte(" i")))
+	fmt.Printf("%s| \n", bytes.TrimPrefix(b, []byte(" i ")))
+
+	fmt.Println(bytes.Fields(b))
+	fmt.Println(bytes.Split(b, []byte(" "))) //相邻会进行两次分割
+
+	fmt.Printf("%s \n", bytes.Join(bytes.Fields(b), []byte("|")))
+}
+```
+
 ## type Reader
 ```go
 type Reader struct{
