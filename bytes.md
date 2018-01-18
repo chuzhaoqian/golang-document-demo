@@ -318,3 +318,137 @@ type Buffer struct{
 }
 ```
 > Buffer 是一个实现了读写方法的可变大小的字节缓冲。本类型的零值是一个空的可用于读写的缓冲。
+
+## func NewBuffer
+```go
+func NewBuffer(buf []byte)*Buffer
+```
+> NewBuffer使用buf作为初始内容创建并初始化一个Buffer。本函数用于创建一个用于读取已存在数据的buffer；也用于指定用于写入的内部缓冲的大小，此时，buf应为一个具有指定容量但长度为0的切片。buf会被作为返回值的底层缓冲切片。
+>
+> 大多数情况下，new(Buffer)（或只是声明一个Buffer类型变量）就足以初始化一个Buffer了。
+
+## func NewBufferString
+```go
+func NewBufferString(s string)*Buffer
+```
+> NewBuffer 使用 s string 作为初始内容创建并初始化一个 Buffer。本函数用于传建一个用于读取已存在数据的 buffer 。大多数情况下， new(Buffer)(或只是声明一个 Buffer 类型变量)就足以初始化一个 Buffer 了。
+
+## func (*Buffer)Reset
+```go
+func (b *Buffer)Reset()
+``` 
+> Reset 重设缓冲，因此会丢弃全部内容，等价于 b.Truncate(0)。
+
+## func (*Buffer)Len
+```go
+func (b *Buffer)Len()int
+```
+> 返回缓冲中魏都区部分的字节长度； b.Len() == len(b.Bytes())。
+
+## func (*Buffer)Bytes
+```go
+func (b *Buffer)Bytes()[]byte
+```
+> 返回未读取部分字节数据的切片，如果中间没有调用其他方法，修改返回的切片的内容会直接改变 Buffer 的内容。
+
+## func (*Buffer)String
+```go
+func (b *Buffer)String()string
+```
+> 将魏都区部分的字节数据作为字符创返回，如果 b *Buffer 是 nil 指针，会返回 “<nil>”。
+
+## func (*Buffer)Truncate
+```go
+func (b *Buffer)Truncate(n int)
+```
+> 丢弃缓冲中除去前 n 字节数据外的其他数据，如果 n 小于零或者大于缓冲容量将 panic。
+
+## func (*Buffer)Grow
+```go
+func (b *Buffer)Grow(n int)
+```
+> 必要时会增加缓冲的容量，以保证 n 字节的剩余空间。调用 Grow(n) 后至少可以向缓冲中写入 n 字节数据而无需申请内存。如果 n 小于零或者不能增加容量都会 panic 。
+
+## func (*Buffer)Read
+```go
+func (b *Buffer)Read(p []byte)(n int, err error)
+```
+> Read 方法从缓冲中读取数据知道缓冲中没有数据或者读取了 len(p) 字节数据，将读取的数据写入 p 。返回值 n 是读取的字节数，除非缓冲中完全没有数据可以读取并写入 p ，此时返回值 err 为 io.EOF ;否则 err 总是 nil。
+
+## func (*Buffer)Next
+```go
+func (b *Buffer)Next(n int)[]byte
+```
+> 返回未读取部分前 n 字节数据的切片，并且移动读取位置，就像调用了 Read 方法一样。如果缓冲内数据不足，会返回整个数据的切片。切片只在下一次调用 b 的读/写方法前才合法。
+
+## func (*Buffer)ReadByte
+```go
+func (b *Buffer)ReadByte()(c byte, err error)
+```
+> ReadByte 读取并返回缓冲中的下一个字节。如果没有数据可用,返回值 err 为 io.EOF。
+
+## func (*Buffer)UnreadByte
+```go
+func (b *Buffer)unreadByte()error
+```
+> UnreadByte 吐出最后一次读取操作读取的最后一个字节。如果最后一次读取操作之后进行了写入，会返回错误。
+
+## func (*Buffer)ReadRune
+```go
+func (b *Buffer)ReadRune()(r rune, size int, err error)
+```
+> ReadRune 读取并返回缓冲中的下一个 utf-8 码值。如果没有数据可用，返回值 err 为 io.EOF。如果换种的数据是错误的 utf-8 编码，会吃掉字节并放回(U+FFFD, 1, nil)。
+
+## func (*Buffer)UnreadByteeadRune
+```go
+func (b *Buffer)UnreadRune()error
+```
+>  UnreadRune 吐出最近一次调用 ReadRune 方法读取的 unicode 码值。如果zuijin 一次读写操作不是 ReadRune,返回错误。
+
+## func (*Buffer)ReadBytes
+```go
+func (b *Buffer)ReadBytes(delim byte)(line []byte, err error)
+```
+> ReadBytes 读取知道第一次遇到 delim 字节，返回一个保航一度去的数据和 delim 字节的切片。如果 ReadBytes 方法在读取到 delim 之前遇到错误，他会返回在错误之前读取的数据以及该错误(一般是 io.EOF)。当且仅当 ReadBytes 方法返回的切片不以 delim 结尾时，会返回一个非 nil 的错误。
+
+## func (*Buffer)ReadString
+```go
+func (b *Buffer)ReadString(delim byte)(line string, err error)
+```
+> ReadString读取直到第一次遇到delim字节，返回一个包含已读取的数据和delim字节的字符串。如果ReadString方法在读取到delim之前遇到了错误，它会返回在错误之前读取的数据以及该错误（一般是io.EOF）。当且仅当ReadString方法返回的切片不以delim结尾时，会返回一个非nil的错误。
+
+## func (*Buffer)Write
+```go
+func (b *Buffer)Write(p []byte)(n int, err error)
+```
+> Write 将 p 的内容写入缓冲中，如果必要会增加缓冲容量。返回值 n 为 len(p)， err 总是 nil。 如果缓冲变得太大， Write 会采用错误值 ErrTooLarge 已发 panic。
+
+## func (*Buffer)WriteString
+```go
+func (b *Buffer)WriteString(s string)(n int, err error)
+```
+
+## func (*Buffer)WriteByte
+```go
+func (b *Buffer)WriteByte(c byte)error
+```
+
+## func (*Buffer)WriteRune
+```go
+func (b *Buffer)WriteRune(r rune)(n int, err error)
+```
+
+## func (*Buffer)ReadFrom
+```
+func (b *Buffer)ReadFrom(r io.Reader)(n int64, err error)
+```
+> ReadFrom 从 r 中读取数据知道结束并将读取的数据写入缓冲中，如果必要会增加缓冲容量。返回值 n 为从 r 读取并写入 b 的字节数；会返回读取时遇到的除了 io.EOF 之外的错误。如果缓冲太大， Readfrom 会采用错误值 ErrTooLarge 引发 panic。
+
+## func (*Buffer)WriteTo
+```go
+func (b *Buffer)WriteTo(w io.Writer)(n int64, err error)
+```
+> WriteTo 从缓冲中读取数据知道缓冲内内有数据或遇到错误，并将这些数据写入 w io.Writer 。返回值 n 为从 b 读取并写入 w 的字节数；返回值总是可以无溢出的写入 int 类型，蛋为了匹配 io.WriterTo 接口设为 int64 类型。从 b 读取是遇到的非 io.EOF 错误及写入 w 时遇到的错误都会终止并放回错误。
+
+
+
