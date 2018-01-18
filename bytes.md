@@ -467,6 +467,27 @@ func (r *Reader)WriteTo(w io.Writer)(n int64, err error)
 ```
 > WriteTo 实现了 io.WriterTo 接口。
 
+### Example
+```go
+package main
+
+import (
+	"bytes"
+	"fmt"
+)
+
+func main() {
+	s := " i am golang " // 13个
+	b := []byte(s)
+	r := bytes.NewReader(b)
+	fmt.Println(r)
+	fmt.Println(r.Len()) // 13
+	bm := make([]byte, 10)
+	r.Read(bm)
+	fmt.Println(r.Len()) // 3
+	fmt.Println(bm)
+}
+```
 
 ## type Buffer
 ```go
