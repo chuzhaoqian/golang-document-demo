@@ -231,6 +231,38 @@ func ToUpperSpecial(_casse unicode.SpecialCase, s []byte)[]byte
 ``` 
 > 使用 _case 规定的字符映射，返回字母对应的标题版本的拷贝。
 
+## func ToTitle
+```go
+func ToTitle(s []byte)[]byte
+```
+> 返回将所有字母都转为对应的辩题版本的拷贝。
+
+### Example
+```go
+package main
+
+import (
+	"bytes"
+	"fmt"
+)
+
+func main() {
+	s := "i am golang"
+	b1 := make([]byte, 2)
+	b1 = []byte(s)
+	fmt.Println(b1)
+
+	fmt.Println(bytes.Title(b1))
+
+	b2 := bytes.Title(b1)
+	fmt.Printf("%s\n", b2)
+
+	fmt.Printf("%s\n", bytes.ToLower(b2))
+	fmt.Printf("%s\n", bytes.ToUpper(b2))
+	fmt.Printf("%s\n", bytes.ToTitle(b2)) // 和 ToUpper 有什么区别？
+}
+```
+
 ## func Repeat
 ```go
 func Repeat(b []byte, count int)[]byte
