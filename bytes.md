@@ -497,6 +497,27 @@ type Buffer struct{
 ```
 > Buffer 是一个实现了读写方法的可变大小的字节缓冲。本类型的零值是一个空的可用于读写的缓冲。
 
+### Example
+```go
+package main
+
+import (
+	"bytes"
+	"fmt"
+	"os"
+)
+
+func main() {
+	var b bytes.Buffer
+	fmt.Println(b)
+	b.Write([]byte("Hello "))
+	fmt.Println(b)
+	fmt.Fprintf(&b, "world!")
+	fmt.Println(b)
+	b.WriteTo(os.Stdout)
+}
+```
+
 ## func NewBuffer
 ```go
 func NewBuffer(buf []byte)*Buffer
