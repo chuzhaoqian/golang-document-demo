@@ -18,6 +18,28 @@ func Compare(a, b []byte)int
 ```
 > Compare 返回一个整数表示两个 []byte 切片按字典比较的结果。0 相等 -1小于 1大于。nil 参数视为空切片。
 
+### Example
+```go
+package main
+
+import (
+	"bytes"
+	"fmt"
+)
+
+func main() {
+	b1 := make([]byte, 2)
+	b1 = []byte{1, 2}
+	fmt.Println(b1)
+
+	b2 := make([]byte, 2)
+	b2 = []byte{1, 2}
+	fmt.Println(b1)
+
+	fmt.Println(bytes.Compare(b1, b2))
+}
+```
+
 ## func Equal
 ```go
 func Equal(a, b []byte)bool
@@ -30,11 +52,56 @@ func EqualFold(s,t []byte)bool
 ```
 > 判断两个 utf-8 编码切片(将 unicode 大写、小写、标题三种格式字符视为相同)是否相等。
 
+### Example
+```go
+package main
+
+import (
+	"bytes"
+	"fmt"
+)
+
+func main() {
+	b1 := make([]byte, 2)
+	b1 = []byte{1, 2, 'A'}
+	fmt.Println(b1)
+
+	b2 := make([]byte, 2)
+	b2 = []byte{1, 2, 'a'}
+	fmt.Println(b1)
+
+	fmt.Println(bytes.Equal(b1, b2))
+
+	fmt.Println(bytes.EqualFold(b1, b2))
+}
+```
+
 ## func Runes
 ```go
 func Runes(s []byte)[]rune
 ```
 > Runes 函数返回和 s 等价的 []rune 切片。(将 utf-8 编码的 unicode 码值分别写入单个 rune)
+
+### Example
+```go
+package main
+
+import (
+	"bytes"
+	"fmt"
+)
+
+func main() {
+	s := "1234我"
+	b1 := make([]byte, 2)
+	b1 = []byte(s)
+	fmt.Println(b1)
+
+	fmt.Println(bytes.Runes(b1))
+	//	fmt.Println([]rune(b1)) // panic
+	fmt.Println([]rune(s))
+}
+```
 
 ## func HasPrefix
 ```go
@@ -108,6 +175,31 @@ func LastIndexAny(s []byte,chars string)int
 func LastIndexFunc(s []byte, f func(r rune)bool)int
 ```
 > s 中最后一个满足函数 f 的 unicode 码值得为之，不存在则返回-1。
+
+### Example
+```go
+package main
+
+import (
+	"bytes"
+	"fmt"
+)
+
+func main() {
+	s := "12341我"
+	b1 := make([]byte, 2)
+	b1 = []byte(s)
+	fmt.Println(b1)
+
+	prefix := []byte("12")
+	fmt.Println(bytes.HasPrefix(b1, prefix))
+	fmt.Println(bytes.HasSuffix(b1, prefix))
+	fmt.Println(bytes.Contains(b1, prefix))
+	fmt.Println(bytes.Count(b1, []byte("1")))
+	fmt.Println(bytes.Index(b1, []byte("2")))
+	fmt.Println(bytes.Index(b1, []byte("6"))) // 返回-1
+}
+```
 
 ## func Title
 ```go
