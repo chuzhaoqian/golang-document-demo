@@ -532,6 +532,34 @@ func NewBufferString(s string)*Buffer
 ```
 > NewBuffer 使用 s string 作为初始内容创建并初始化一个 Buffer。本函数用于传建一个用于读取已存在数据的 buffer 。大多数情况下， new(Buffer)(或只是声明一个 Buffer 类型变量)就足以初始化一个 Buffer 了。
 
+### Example
+```go
+package main
+
+import (
+	"bytes"
+	"fmt"
+	"os"
+)
+
+func main() {
+	var b1 bytes.Buffer
+	fmt.Println(b1)
+	b1.Write([]byte("Hello "))
+	fmt.Println(b1)
+	fmt.Printf("%s \n", &b1)
+	b1.WriteTo(os.Stdout)
+	fmt.Println("")
+	
+	// 输出字符串
+	fmt.Printf("%s \n", b1)
+	b2 := bytes.NewBuffer([]byte("Hello "))
+	fmt.Println(b2)
+	b3 := bytes.NewBufferString("Hello ")
+	fmt.Println(b3)
+}
+```
+
 ## func (*Buffer)Reset
 ```go
 func (b *Buffer)Reset()
