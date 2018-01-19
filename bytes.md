@@ -590,6 +590,30 @@ func (b *Buffer)Truncate(n int)
 ```
 > 丢弃缓冲中除去前 n 字节数据外的其他数据，如果 n 小于零或者大于缓冲容量将 panic。
 
+### Example
+```go
+package main
+
+import (
+	"bytes"
+	"fmt"
+)
+
+func main() {
+	s := "i am golang"
+	b := []byte(s)
+	bf := bytes.NewBuffer(b)
+	fmt.Printf("%s \n", bf.String())
+	fmt.Println(bf.Bytes())
+	fmt.Println(bf.Len())
+	bf.Reset()
+	fmt.Println(bf.Len())
+	bf.Write(b)
+	bf.Truncate(1)
+	fmt.Println(bf.Len())
+}
+```
+
 ## func (*Buffer)Grow
 ```go
 func (b *Buffer)Grow(n int)
