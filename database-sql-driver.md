@@ -187,3 +187,39 @@ type Result interface{
 }
 ```
 > Result 是查询执行的结果。
+
+## type RowsAffected
+```go
+type RowsAffected int64
+```
+> RowsAffected 实现了 Result 接口，用于 insert 或 update 操作，这些操作会修改 0 到多行数据。
+
+## func (RowsAffected)LastInsertId
+```go
+func (RowsAffected)LastInsertId()(int64, error)
+```
+
+## func (RowsAffected)RowsAffected()(int64, error)
+```go
+func (RowsAffected)RowsAffected()(int64, error)
+```
+
+## type Rows
+```go
+type Rows interface{
+	// Colums 返回各列的名称，列的数量可以从切片长度确定。
+	// 如果某个列的名称未知，对应的条目应为空字符串。
+	Columns()[]string
+	
+	// Close 关闭 Rows
+	Close()error
+	
+	// 调用 Next 方法以将下一行数据填充进提供的切片中
+	// 提供的切片必须和 Columns 返回的切片长度相同
+	// 切片 dest 可能被填充同一种驱动 Value 类型，但字符串除外。
+	// 所有 string 值都必须装欢为 []byte。
+	// 当没有更多行时，Next 应放回 io。EOF。
+	Next(dest []Value)error
+}
+```
+> Rows 是执行查询得到的结果的迭代器。
