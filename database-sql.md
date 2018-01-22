@@ -268,28 +268,84 @@ func (rs *Rows)Err()error
 ```
 > Err 返回可能的在迭代时出现的错误。Err 需要在显示或隐式调用 Close 方法后调用。
 
+## type Stmt
+```go
+type Stmt struct{
+	
+}
+```
+> Stmt 是准备好的状态。Stmt 可以安全的被多个go程同时使用。
 
+## func (*Stmt)Exec
+```go
+func (s *Stmt)Exec(args ...interface{})(Result, error)
+```
+> Exec 使用提供的参数执行准备好的命令状态，返回 Restul 类型的该状态执行结果。
 
+## func (*Stmt)Query
+```go
+func (s *Stmt)Query(args ...interface{})(*Rows, error)
+```
+> Query 使用提供的参数执行准备好的查询状态，返回 Rows 类型查询结果。
 
+## func (*Stmt)QueryRow
+```go
+func (s *Stmt)QueryRow(	args ...interface{})*Row
+```
+> QueryRow 使用提供的参数执行准备好的查询状态。如果在执行时遇到了错误，该错误会被延迟，知道返回值的 Scan 方法被调用时菜释放。返回值总是非 nil 的。如果没有查询到结果， *Row 类型返回值的 Scan 方法会返回 ErrNoRows;否则 Scan 方法会扫描结果第一行并对其其余行。
 
+## func (*Stmt)Close
+```go
+func (s *Stmt)Close()error
+```
+> Close 关闭状态。
 
+## type Tx
+```go
+type Tx struct{
+	//
+}
+```
+> Tx 代表一个进行中的数据库事务。一次事务必须对 Commit 或 Rollback 的调用结束。调用 Commit 或 Rollback 后，所有对事务的操作都会失败并返回错误值 ErrTxDone。
 
+## func (*Tx)Exec
+```go
+func (tx *Tx)Exec(query string, args ...interface{})(Result, error)
+```
+> Exec 执行命令，但不会返回结果。
 
+## func (*Tx)Query
+```go
+func (tx *Tx)Query(query string, args ...interface{})(*Rows, error)
+```
+> Query 执行查询并返回零到多行结果(Rows)。
 
+## func (*Tx)QueryRow
+```go
+func (*Tx)QueryRow(query string, args ...interface{})*Row
+```
+> QueryRow 执行查询并期望返回最多一行结果(Row)。QueryRow 总是返回非 nil 结果，查询失败的错误会延迟到调用该结果的 Scan 方法时释放。
 
+## func (*Tx)Prepare
+```go
+func (tx *Tx)Prepare(query string)(*Stmt, error)
+```
+> Prepare 准备一个专用于该事务的状态。返回的该事务专属状态操作在 Tx 递交会回滚后不能再使用。要在该事务中使用已存在的状态。
 
+## func (*Tx)Stmt
+```go
+func (tx *Tx)Prepare(*Stmt)*Stmt
+```
+> Stmt 使用已存在的状态生成一个该事务特定的状态。
 
+## func (*Tx)Commit
+```go
+func (tx *Tx)Commit()error
+```
+> Commit 递交事务。
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+## func (*Tx)Rollbace
+```go
+func (tx *Tx)Rollback()error
+```
+> Rollback 放弃并回滚事务。
