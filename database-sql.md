@@ -5,6 +5,8 @@ import "database/sql"
 > sql 提供了保证 SQL 或类 SQL数据库的泛用接口。
 >
 > 使用 sql 包时必须注入(至少)一个数据库驱动。https://github.com/go-sql-driver/mysql 支持database/sql，全部采用go写。后面使用的例子也会使用此包。
+>
+> go get -u github.com/go-sql-driver/mysql 安装这个驱动包
 
 ```go
 var ErrNoRows = errors.New("sql: no rows in result ser")
@@ -163,6 +165,28 @@ func (db *DB)Driver()driver.Driver
 func (db *DB)Ping()error
 ```
 > Ping 检查与数据库的连接是否有效，如果需要会创建连接。
+
+### Example
+```go
+package main
+
+import (
+	"database/sql"
+	"fmt"
+
+	_ "github.com/go-sql-driver/mysql"
+)
+
+func main() {
+	db, err := sql.Open("mysql", "root:Lawuyou@tcp(localhost:8889)/test?charset=utf8")
+	fmt.Println(err) // 为什么总是 nil
+	dbErr := db.Ping()
+	if dbErr != nil {
+		fmt.Println(dbErr)
+		panic(dbErr)
+	}
+}
+```
 
 ## func (*DB)Close
 ```go
