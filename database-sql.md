@@ -373,3 +373,102 @@ func (tx *Tx)Commit()error
 func (tx *Tx)Rollback()error
 ```
 > Rollback 放弃并回滚事务。
+
+### Example
+```go
+package main
+
+import (
+	"database/sql"
+	"fmt"
+
+	_ "github.com/go-sql-driver/mysql"
+)
+
+func main() {
+	db, err := sql.Open("mysql", "root:Lawuyou@tcp(localhost:8889)/test?charset=utf8")
+	fmt.Println(err) // 为什么总是 nil
+	dbErr := db.Ping()
+	if dbErr != nil {
+		//		fmt.Println(dbErr)
+		panic(dbErr)
+	}
+
+	//	CREATE TABLE `userinfo` (
+	//		`uid` INT(10) NOT NULL AUTO_INCREMENT,
+	//		`username` VARCHAR(64) NULL DEFAULT NULL,
+	//		`departname` VARCHAR(64) NULL DEFAULT NULL,
+	//		`created` DATE NULL DEFAULT NULL,
+	//		PRIMARY KEY (`uid`)
+	//	);
+
+	insterSql := "insert userinfo set username=?,departname=?,created=?"
+	stmt, prepareErr := db.Prepare(insterSql)
+	if prepareErr != nil {
+		panic(prepareErr)
+	}
+
+	res, execErr := stmt.Exec("czq", "研发部门", "2018-01-23")
+	if execErr != nil {
+		panic(execErr)
+	}
+
+	id, resErr := res.LastInsertId()
+	if resErr != nil {
+		panic(resErr)
+	}
+	fmt.Println("insert id :", id)
+
+	updateSql := "update userinfo set username=? where uid=?"
+	stmt, updateErr := db.Prepare(updateSql)
+	if updateErr != nil {
+		panic(updateErr)
+	}
+
+	resUp, execUpErr := stmt.Exec("czq", id)
+
+	if execUpErr != nil {
+		panic(execUpErr)
+	}
+	affect, affectErr := resUp.RowsAffected()
+	fmt.Println("影响", affect, affectErr)
+
+	rows, queryErr := db.Query("select * from userinfo")
+	if queryErr != nil {
+		panic(queryErr)
+	}
+
+	for rows.Next() {
+		var uid int
+		var username string
+		var department string
+		var created string
+		// 这里不能缺少参宿 或者返回错误
+		//		scanErr := rows.Scan(&uid)
+		scanErr := rows.Scan(&uid, &username, &department, &created)
+		if scanErr != nil {
+			panic(scanErr)
+		}
+		fmt.Println(uid)
+	}
+
+	delSql := "delete from userinfo where uid=?"
+	stmtDel, errDel := db.Prepare(delSql)
+	if errDel != nil {
+		panic(errDel)
+	}
+
+	resDel, execDelErr := stmtDel.Exec(id)
+	if execDelErr != nil {
+		panic(execDelErr)
+	}
+
+	affectDel, affetDelErr := resDel.RowsAffected()
+	if affetDelErr != nil {
+		panic(affetDelErr)
+	}
+	fmt.Println("删除", affectDel)
+
+	db.Close()
+}
+```
