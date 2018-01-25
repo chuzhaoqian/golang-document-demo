@@ -298,3 +298,53 @@ func NewEncoder(w io.Writer)*Encoder
 func (enc *Encoder)Encode(v interface{})error
 ```
 > Encode 将 v 的 json 编码写入输出流，并写入一个换行符。
+
+### Example
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"strings"
+)
+
+type Server struct {
+	ServerName string // 小写则不解析
+	ServerIP   string
+}
+
+type Serverlice struct {
+	Servers []Server
+}
+
+func main() {
+	var s Serverlice
+
+	var i interface{}
+
+	str := `{"servers":[{"serverName":"Shanghai_VPN","serverIP":"127.0.0.1"},{"serverName":"Beijing_VPN","serverIP":"127.0.0.2"}]}`
+	json.Unmarshal([]byte(str), &s)
+	fmt.Println(s)
+
+	json.Unmarshal([]byte(str), &i)
+	fmt.Println(i) // map
+
+	data := `
+	{
+		"id" : 1234567,
+		"Name" : "F"
+	}
+	`
+	json.Unmarshal([]byte(data), &i)
+	// map[id:1.234567e+06 Name:F]
+	// 字面数值按 float64 来处理
+	fmt.Println(i)
+
+	dec := json.NewDecoder(strings.NewReader(data))
+	dec.UseNumber()
+	dec.Decode(&i)
+	fmt.Println(i) // map[id:1234567 Name:F]
+}
+```
