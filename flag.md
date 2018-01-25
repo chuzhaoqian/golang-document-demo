@@ -361,3 +361,24 @@ func VisitAll(fn func(*Flag))
 ```
 > 按照字典顺序遍历标签，并且对每个标签调用fn。 这个函数会遍历所有标签，不管解析时有无进行设置。
 
+## Example
+```go
+// ./golang-document-demo -n true
+
+package main
+
+import (
+	"flag"
+	"fmt"
+)
+
+var f = flag.Bool("n", false, "print newline")
+
+func main() {
+	flag.PrintDefaults() // 应该是 协程 触发的
+	flag.Parse()
+
+	fmt.Println("剩余", flag.NArg())
+	fmt.Println("参数值", *f)
+}
+```
