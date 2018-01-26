@@ -171,3 +171,9 @@ type Tmplate struct {
 }
 ```
 > Template 类型是 text/template 包的 Template 类型的特化版，用于生成安全的 HTML 文本片段。
+
+## func Must
+```go
+func Must(t *Template, err error)*Template
+```
+> Must 函数用于包装返回(*Template， error)的函数/方法调用，它会在 err 非 nil 时 panic， 一般用于变量的初始化
