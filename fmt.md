@@ -192,3 +192,70 @@ func Fscanln(r io.Reader, a ...interface{}) (n int, err error)
 func Sscanln(str string, a ...interface{}) (n int, err error)
 ```
 > Sscanln类似Sscan，但会在换行时才停止扫描。最后一个条目后必须有换行或者到达结束位置。
+
+### Example
+```go
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	s := "http://www.baidu.com"
+	i := 1
+	f := 1.0
+
+	fmt.Printf("%T \n", s) // string
+	fmt.Printf("%T \n", i) // int
+	fmt.Printf("%T \n", f) // float64
+
+	fmt.Printf("%v \n", s)
+	fmt.Printf("%+v \n", s)
+	fmt.Printf("%#v \n", s) // "http://www.baidu.com" 多引号
+	fmt.Printf("%#v \n", i) // 1
+
+	fmt.Printf("%d \n", i)
+	_, err := fmt.Printf("%9.1f \n", i) //	%!f(int=        1)
+	fmt.Println(err)                    // <nil>
+	fmt.Printf("%9.1f \n", f)
+	
+	fmt.Fprintf(os.Stdout, "%s\n", i) // %!s(int=1)
+	fmt.Fprintf(os.Stdout, "%s\n", s)
+}
+```
+
+```go
+package main
+
+import (
+	"fmt"
+	"strings"
+	//	"os"
+)
+
+func main() {
+	s := "I am Golang ,age 4 岁"
+	sr := strings.NewReader(s)
+	var name string
+	var age int
+
+	fmt.Fscanf(sr, "I am %s ,age %d", &name, &age)
+	fmt.Printf("%s %d \n", name, age)
+}
+```
+
+```go
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	var s string
+	fmt.Println("请输入：")
+	fmt.Scan(&s)
+	fmt.Println("输入的是", s)
+}
+```
