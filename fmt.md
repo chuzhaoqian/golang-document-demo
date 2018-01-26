@@ -137,4 +137,58 @@ func Sprintln(a ...interface{})string
 ```go
 func Errorf(format string, a ...interface{})error
 ```
-> Errorf 根据 format 参数生成格式化字符串并返回一个包含该字符串的错误。 同 errors 包
+> Errorf 根据 format 参数生成格式化字符串并返回一个包含该字符串的错误。 同 errors 包。
+
+## func Scanf
+```go
+func Scanf(format string, a ...interface{})(n int, err error)
+```
+> Scanf 从标准输入扫描文本，根据 format 参数指定的格式将成功读取的空白分割的值保存进行成功传递给本函数的参数。返回成功扫描的条目个数和遇到的任何错误。
+
+## func Fscanf
+```go
+func Fscanf(r io.Reader, format string, a ...interface{})(n int, err error)
+```
+> Fscanf 从 r 扫描文本，根据 format 参数指定的格式将成功读取的空白分割的值保存进成功传递给本函数的参数。返回成功扫描的条目个数和遇到的任何错误。
+
+## func Sscanf
+```go
+func Sscanf(str string, format string, a ...interface{})(n int, err error)
+```
+> Sscanf 从字符串 str 扫描文本，根据 format 参数指定的格式将成功读取的空白分隔的值保存进成功传递给本函数的参数。返回成功扫描的条目个数和遇到的任何错误。
+
+## func Scan
+```go
+func Scan(a ...interface{})(n int, err error)
+```
+> Scan 从标准输入扫描文本，将成功读取的空白分隔的值保存进成功传递给本函数的参数。换行视为空白。返回成功扫描的条目个数和遇到的任何错误。如果读取的条目比提供的参数少，会返回错误。
+
+## func Fscan
+```go
+func Fscan(r io.Reader, a ...interface{})(n int, err error)
+```
+> Fscan 从 r 扫描文本，将成功读取的空白分隔的值保存进成功传递给本函数的参数。幻皇视为空白。返回成功扫描的条目个数和遇到的任何错误。如果读取的条目比提供的参数少，会返回一个错误。
+
+## func Sscan 
+```go
+func Sscan(str string, a ...interface{})(n int, err error)
+```
+> Sscan 从字符串 str 扫描文本，将成功读取的空白分割的值保存进成功传递给本函数的参数。换行视为空白。返回成功扫描的条目个数和遇到的任何错误。如果读取的条目比提供的参数少，会返回一个错误报告原因。
+
+## func Scanln
+```go
+func Scanln(a ...interface{}) (n int, err error)
+```
+> Scanln类似Scan，但会在换行时才停止扫描。最后一个条目后必须有换行或者到达结束位置。
+
+## func Fscanln
+```go
+func Fscanln(r io.Reader, a ...interface{}) (n int, err error)
+```
+> Fscanln 类似 Fscan，但会在换行时才停止扫描。最后一个条目后必须有换行或者到达结束位置。
+
+## func Sscanln
+```go
+func Sscanln(str string, a ...interface{}) (n int, err error)
+```
+> Sscanln类似Sscan，但会在换行时才停止扫描。最后一个条目后必须有换行或者到达结束位置。
