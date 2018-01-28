@@ -276,3 +276,33 @@ func (t *Template)(wr io.Writer, data interface{})error
 func (t *Template)ExecuteTemplate(wr io.Writer, name string, data interface{})error
 ```
 > ExecuteTemplate 方法类似 Execute,但是使用名为 name 的 t 关联的模板产生输出。
+
+
+### Example
+```go
+package main
+
+import (
+	"fmt"
+	"html/template"
+	"os"
+)
+
+func main() {
+	tmpl := `
+	<!DOCTYPE html>
+	<html>
+	    <head>
+	        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> <title>Go Web Programming</title>
+	    </head>
+	    <body>
+	        {{ . }}
+	    </body>
+	</html>
+	`
+	t := template.New("layout")
+	t, _ = t.Parse(tmpl)
+	fmt.Println("模板名：", t.Name())
+	t.Execute(os.Stdout, "Czq")
+}
+```
