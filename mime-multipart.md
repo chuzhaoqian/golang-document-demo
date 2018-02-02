@@ -167,3 +167,30 @@ func (w *Writer)WriteFielf(fieldname, value string)error
 func (w *Writer)Close()error
 ```
 > Close方法结束multipart信息，并将结尾的边界写入底层io.Writer接口。
+
+### Example
+```go
+package main
+
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"mime/multipart"
+	"os"
+)
+
+func main() {
+	filename := "./README.md"
+	bodyBuf := &bytes.Buffer{}
+	bodyWriter := multipart.NewWriter(bodyBuf)
+	fileWriter, _ := bodyWriter.CreateFormFile("filename", filename)
+	fh, _ := os.Open(filename)
+	io.Copy(fileWriter, fh)
+	contentType := bodyWriter.FormDataContentType()
+	bodyWriter.Close()
+	fmt.Println(bodyBuf)
+	fmt.Println("##########")
+	fmt.Println(contentType)
+}
+```
