@@ -613,57 +613,319 @@ func (c *client)Do(req *Request)(resp *Response, err error)
 ```
 > Do方法发送请求，返回HTTP回复。它会遵守客户端c设置的策略（如重定向、cookie、认证）。如果客户端的策略（如重定向）返回错误或存在HTTP协议错误时，本方法将返回该错误；如果回应的状态码不是2xx，本方法并不会返回错误。如果返回值err为nil，resp.Body总是非nil的，调用者应该在读取完resp.Body后关闭它。如果返回值resp的主体未关闭，c下层的RoundTripper接口（一般为Transport类型）可能无法重用resp主体下层保持的TCP连接去执行之后的请求。请求的主体，如果非nil，会在执行后被c.Transport关闭，即使出现错误。一般应使用Get、Post或PostForm方法代替Do方法。
 
+## func (*Client)Head
+```go
+func (c *Client)Head(url string)(resp *Response, err error)
+```
+> Head 向指定的 URL 发出一个 HEAD 请求，如果回应状态码如 301 ~ 303、307，Head 会在调用 c.CheckRedirect 后执行重定向
 
+## func (*Client)Get
+```go
+func (c *Client)Get(url string)(resp *Response, err error)
+```
+> Get 向指定的 URL 发出一个 GET 请求，如果回应状态码如 301 ~ 303、307，Head 会在调用 c.CheckRedirect 后执行重定向。如果 c.CheckRedirect 执行失败或存在 HTTP 协议错误时，本方法将返回该错误；如果回应的状态码不是 2XX,本方法并不会返回错误。吐过返回值 err 为 nil，resp.Body 总是非 nil 的，调用者应该在读取完 resp.Body 后关闭它。
 
+## func (*Client)Post
+```go
+func (c *Client)Post(url string, bodyType string, body io.Reader)(resp *Response, err error)
+```
+> Post 向指定的 URL 发出一个 POST 请求。bodyType 为 POST 数据的类型，body 为 POST 数据，作为请求的主体。如果参数 body 实现了 io.Closer 接口，它会在发送请求后关闭。调用者有责任在读取完返回值 resp 的主体后关闭它。
 
+## func (*Client)PostForm
+```go
+func (c *Client)PostForm(url string, data url.Values)(resp *Response, err error)
+```
+> PostForm 向指定的 URL 发送一个 POST 请求，url.Values 类型的 data 会被编码为请求的主体。 POST 数据的类型一般会设为 "application/x-www-form-urlencoded"。 如果返回值 err 为 nil，resp.Body 总是非 nil 的，调用者应该在读取完 resp.Body 后关闭它。
 
+## type Handler
+```go
+type Handler interface {
+	ServeHTTP(ResponseWriter, *Request)
+}
+```
+> 实现了 Handler 接口的对象可以注册到 HTTP 服务端，为特定的路径及其子树树提供服务。ServeHTTP 应该将回复的头域和数据写入 ResponseWriter 接口然后返回。返回标志着该请求已经结束，HTTP 服务端可以转移向该连接上的下一个请求
 
+## func NotFoundHandler
+```go
+func NotFoundHandler()Handler
+```
+> NotFoundHandler 返回一个简单的请求处理器，该处理器会对每个请求都回复 “404 page not found”
 
+## func RedirectHandler
+```go
+func RedirectHandler(url string, code int)Handler
+```
+> RedirectHandler 返回一个请求处理器，该处理器会对每个请求都使用状态码 code 重定向到网址 url
 
+## func TimeoutHandler
+```go
+func TimeoutHandler(h Handler, dt time.Duration, msg string)Handler
+```
+> TimeoutHandler 返回一个采用指定时间限制的请求处理器。返回的 Handler 会调用 h.ServeHTTP 去处理每个请求，但如果某一次调用耗时超过了时间限制，该处理器会回复请求状态码 503 Service Unavailable, 并将 msg 作为回复的主体(如果msg为空字符串，将发送一个合理的默认信息)。超时后 h 对它的 ResponseWriter 接口参数的鞋服操作会返回 ErrHanderTimeout
 
+## func StripPrefix
+```go
+func StripPrefix(prefix string, h Handler)Handler
+```
+> StriPrefic 返回一个处理器，该处理器会将请求的 URL.Path 字段中给定前缀 prefix 去除后再交由 h 处理。StripPrefix 会向 URL.Path 字段中没有给定前缀的请求回复 404 page not found
 
+## type HandlerFunc
+```go
+type HandlerFunc func(ResponseWriter, *Request)
+```
+> HandlerFunc 是一个适配器，通过类型转换让我们可以将普通的函数作为 HTTP 处理器使用。如果 f 是一个具有适当签名的函数，HandlerFunc(f) 通过调用 f 实现了 Handler 接口
 
+## func (HandlerFunc)serveHTTP
+```go
+func (f HandlerFunc)ServeHTTP(w ResponseWriter, r *Request)
+```
+> ServeHTTP 方法会调用 f(w,r)
 
+## type ServeMux
+```go
+type ServerMux struct {
+	//
+}
+```
+> ServeMux 类型是 HTTP 请求的多路转接器。回将每个请求的 URL 与一个注册模式的列表进行匹配，并调用 和 URL 最匹配的模式的处理器。
+>
+> 模式固定的、由根尅是的路径，或由根开始的子树。较长的模式优先于较短的模式。
+>
+> 注意，因为以斜杠结尾的模式代表一个由根开始的子树，模式"/"会匹配所有的未被其他注册的模式匹配的路径，而不仅仅是路径"/"。
+>
+> ServeMux 还会注意到请求的 URL 路劲的无害化，将任何路径中包含"."或".."元素的请求重定向到等价的没有这两种元素的URL。（参见path.Clean函数）
 
+## func NewServeMux
+```go
+func NewserveMux()*ServeMux
+```
+> NewServeMux 创建并返回一个新的 *ServeMux
 
+## func (*ServeMux)Handle
+```go
+func (mux *ServeMux)Handle(pattern string, handler Handler)
+```
+> Handle 注册 HTTP 处理器 handler 和应对的模式 pattern。如果该模式已经注册有一个处理器，Handle 会 panic
 
+## func (*ServeMux)HandleFunc 
+```go
+func (mux *ServeMux)HandleFunc(pattern string, handler func(ResponseWriter, *Request))
+```
+> HandleFunc 注册一个处理器函数 handler 和对应的模式 pattern
 
+## func (*ServeMux)Handler
+```go
+func (mux *ServeMux)Handler(r *Request)(h Handler, pattern string)
+```
+> Handler 根据 r.Method、r.Host 和 r.URL.Path 等数据，返回将用于处理该请求的 HTTP 处理器。总是返回一个非 nil 的处理器。如果路径不是它的规范格式，将返回内建的用于从定向到等价的规范路径的处理器。
+>
+> Handler 也会返回匹配该请求的已注册模式；在內建重定向处理器的情况下，pattern 会在从定向后进行匹配。如果还有已注册模式可以应用于该请求，本方法将返回一个內建的 "404 page not found" 处理器和一个字符串模式。
 
+## func (*ServeMux)ServeHTTP
+```go
+func (mux *ServeMux)ServeHTTP(w ResponseWriter, r *Request)
+```
+> ServeHTTP 将请求派遣到与请求的 URL 醉匹配的模式对应的处理器
 
+## type Server
+```go
+type Server struct {
+	Addr string	// 监听的 TCP 地址，如果为空字符串会使用 “:http”
+	Handler Handler	// 调用的处理器，如果为 nil 会调用 htpp.DefaultServeMux
+	ReadTimeout time.Duration	// 请求的读取操作在超时前的最大持续时间
+	WriteTimeout time.Duration	// 回复的写入操作在超时前的最大持续时间
+	MaxHeaderBytes int	// 请求的头域最大长度，如为 0 则用 DefaultMaxHeaderBytes
+	TLSConfig *tls.Config	// 可选的 TLS 配置，用于 ListenAndServeTLS 方法
+	// TLSNextProto (可选)指定一个函数来在一个 NPN 型协议升级出现时接管 TLS 连接的所有权
+	// 映射的键为商谈的协议名；映射的值为函数，该海曙的 Handler 参数应处理 HTTP 请求
+	// 并且初始化 Handler.ServeHTTP 的 *Request 参数的 TLS 和 RemoteAddr 字段（如果未设置）。
+    // 连接在函数返回时会自动关闭。
+	TLSNextProto map[string]func(*Server, *tls.Conn, Handler)
+	// ConnState字段指定一个可选的回调函数，该函数会在一个与客户端的连接改变状态时被调用。
+	ConnState func(net.Conn, ConnState)
+	// ErrorLog指定一个可选的日志记录器，用于记录接收连接时的错误和处理器不正常的行为。
+    // 如果本字段为nil，日志会通过log包的标准日志记录器写入os.Stderr。
+	ErrorLog *log.Logger
+	//
+}
+```
+> Server 类型定义了运行 HTTP 服务端的参数。Server 的零值是合法的配置。
 
+## func (*Server)SerKeepAlivesEnabled
+```go
+func (s *Server)SerKeepAlivesEnabled(v bool)
+```
+> SetKeepAlivesEnabled 控制是否允许 HTTP限制连接重用(keep-alive)功能。默认该功能总是被启用的。只有资源非常紧张的环境或服务端在关闭进程中时，才应该关闭该功能。
 
+## func (*Server)serve 
+```go
+func (srv *Server)Serve(l net.Listener)error
+```
+> Serve 会接手监听器 l net.Lostener 收到的每一个连接，并为每一个连接创建一个姓的服务 go 程。该 go 程会读取请求，然后调用 srv.Handler 回复请求。
 
+## func (*Server)ListenAndServe 
+```go
+func (srv *Server)ListenAndServe()error
+```
+> ListenAndServe 监听 srv.Addr 指定的 TCP 地址，并且会调用 Serve 方法接收到的链接。如果 srv.Addr 为空字符串，会使用":http"
 
+## func (*Server)ListenAndServeTLS
+```go
+func (srv *Server)ListenAndServeTLS(certFile, keyFile string)error
+```
+> ListenAndServeTLS监听srv.Addr确定的TCP地址，并且会调用Serve方法处理接收到的连接。必须提供证书文件和对应的私钥文件。如果证书是由权威机构签发的，certFile参数必须是顺序串联的服务端证书和CA证书。如果srv.Addr为空字符串，会使用":https"。
 
+## type File
+```go
+type File interface {
+	io.Closer
+	io.Reader
+	Readdir(count int)([]os.FileInfo, error)
+	Seek(offset int64, whence int)(int64, error)
+	Stat()(os.FileInfo, error)
+}
+```
+> File 是被 FileSystem 接口的 Open 方法返回的接口类型，可以被 FileServer 等函数用于文件访问服务。该接口的方法的行为应该和 *os.File 类型的同名方法相同
 
+## type FileSystem
+```go
+type FileSystem interface {
+	Open(name string)(File, error)
+}
+```
+> FileSystem 接口实现了对一系列命名文件的访问。文件路径的分隔符为"/"不管足迹操作系统的惯例如何
 
+## type Dir
+```go
+type Dir string
+```
+> Dir 使用限制到指定目录树的本地文件系统实现了 http.fileSystem 接口。空 Dir 被视为 "."
 
+## func (Dir)Open
+```go
+func (d Dir)Open(name string)(File, error)
+```
 
+## fnnc NewFileTransport
+```go
+func NewFileTransport(fs FileSystem)RoundTripper
+```
+> NewFileTransport返回一个RoundTripper接口，使用FileSystem接口fs提供文件访问服务。 返回的RoundTripper接口会忽略接收的请求的URL主机及其他绝大多数属性。NewFileTransport函数的典型使用情况是给Transport类型的值注册"file"协议
 
+## func FileServer
+```go
+func FileServer（root FileSystem)Handler
+```
+> FileServer 返回一个使用 FileSystem 接口 root 提供文件访问服务的 HTTP 处理器。要使用操作系统的 FileSystem 接口实现，可使用 http.Dir
 
+## func ProxyURL
+```go
+func ProxyURL(fixedURL *url.URL)func(*Request)(*url.URL, error)
+```
+> ProxyURL 返回一个代理函数(用于 Transport 类型)，该函数总是返回同一个 URL
 
+## func ProxyFromEnvironment
+```go
+func ProxyFromEnvironment(req *Request)(*url.URL, error)
+```
+> ProxyFromEnvironment 使用环境变量 $HTTP_PROXY 和 $NO_PROXY (或$http_proxy和$no_proxy)的配置返回用于req的代理。如果代理环境不合法将返回错误；如果环境未设定代理或者给定的request不应使用代理时，将返回(nil, nil)；如果req.URL.Host字段是"localhost"（可以有端口号，也可以没有），也会返回(nil, nil)。
 
+## func SetCookie 
+```go
+func SetCookie(w ResponseWriter, cookie *Cookie)
+```
+> SetCookie 在 w 的头域中添加Set-Cookie头，该HTTP头的值为cookie。
 
+## func Redirect 
+```go
+func Redirect(w ResponseWriter, r *Request, urlStr string, code int)
+```
+> Redirect回复请求一个重定向地址urlStr和状态码code。该重定向地址可以是相对于请求r的相对地址
 
+## func NotFound 
+```go
+func NotFound(w ResponseWriter, r *Request)
+```
+> NotFound 回复请求 404 状态(not fount)
 
+## func Error
+```go
+func Error(w ResponseWriter, errror string, code int)
+```
+> Error使用指定的错误信息和状态码回复请求，将数据写入w。错误信息必须是明文。
 
+## func ServeContent
+```go
+func ServeContent(w ResponseWriter, req *Request, name string, modtime time.Time, content io.ReadSeeker)
+```
+> ServeContent使用提供的ReadSeeker的内容回复请求。ServeContent比起io.Copy函数的主要优点，是可以处理范围类请求（只要一部分内容）、设置MIME类型，处理If-Modified-Since请求。
+> 
+> 如果未设定回复的Content-Type头，本函数首先会尝试从name的文件扩展名推断数据类型；如果失败，会用读取content的第1块数据并提供给DetectContentType推断类型；之后会设置Content-Type头。参数name不会用于别的地方，甚至于它可以是空字符串，也永远不会发送到回复里。
+>
+> 如果modtime不是Time零值，函数会在回复的头域里设置Last-Modified头。如果请求的头域包含If-Modified-Since头，本函数会使用modtime参数来确定是否应该发送内容。如果调用者设置了w的ETag头，ServeContent会使用它处理包含If-Range头和If-None-Match头的请求。参数content的Seek方法必须有效：函数使用Seek来确定它的大小。注意：本包File接口和*os.File类型都实现了io.ReadSeeker接口。
 
+## func ServeFile
+```go
+func ServeFile(w ResponseWriter, r *Request, name string)
+```
+> ServeFile 回复请求 name 指定的文件或者目录的内容。
 
+## func MaxBytesReader
+```go
+func MaxBytesReader(w ResponseWriter, r io.ReadCloser, n int64)io.ReadCloser 
+```
+> MaxBytesReader类似io.LimitReader，但它是用来限制接收到的请求的Body的大小的。不同于io.LimitReader，本函数返回一个ReadCloser，返回值的Read方法在读取的数据超过大小限制时会返回非EOF错误，其Close方法会关闭下层的io.ReadCloser接口r。MaxBytesReader预防客户端因为意外或者蓄意发送的“大”请求，以避免尺寸过大的请求浪费服务端资源。
 
+## func Head
+```go
+func Head(url string)(resp *Response, error)
+```
+> Head向指定的URL发出一个HEAD请求，如果回应的状态码 301 ~ 303 307，Head会在调用c.CheckRedirect后执行重定向， Head是对包变量DefaultClient的Head方法的包装。
 
+## func Get
+```go
+func Get(url string)(resp *Response, err error)
+```
+> Get 向指定的 URL 发送一个 GET 请求，如果如果回应的状态码 301 ~ 303 307，Get 会调用 c.CheckRedirect 后执行重定向。如果c.CheckRedirect执行失败或存在HTTP协议错误时，本方法将返回该错误；如果回应的状态码不是2xx，本方法并不会返回错误。如果返回值err为nil，resp.Body总是非nil的，调用者应该在读取完resp.Body后关闭它。Get是对包变量DefaultClient的Get方法的包装。
 
+## func Post
+```go
+func Post(url string, bodyType string, body io.Reader)(resp *Response, err error)
+```
+> Post向指定的URL发出一个POST请求。bodyType为POST数据的类型， body为POST数据，作为请求的主体。如果参数body实现了io.Closer接口，它会在发送请求后被关闭。调用者有责任在读取完返回值resp的主体后关闭它。Post是对包变量DefaultClient的Post方法的包装。
 
+## func PostForm
+```go
+func PostForm(url string, data url.Values)(resp *Response, err error)
+```
+> PostForm 向指定的 URL 发送一个 POST 请求，url.Vaules 类型的 data 会被编码为请求的主体。如果返回值 err 为 nil, resp.Body 总是非 nil 的，调用者应该在读取网 resp.Body 后关闭它。PostForm 是对包变量 DefaultClient 的 PostForm 方法包装
 
+## func Handle
+```go
+func Handle(pattern string, handler Handler)
+```
+> Handle 注册 HTTP 处理器 handler 和对应的模式 pattern (注册到 DefaultServeMux)。如果该模式已经注册有一个处理器，Handle 会 panic。ServeMux 的文档解释了模式的匹配机制
 
+## func HandleFunc
+```go
+func handleFunc(pattern string, handler func(ResponseWriter, *Request))
+```
+> HandleFunc 注册一个处理器函数 handler 和对应的模式 pattern（注册到DefaultServeMux）。ServeMux 的文档解释了模式的匹配机制。
 
+## func Serve
+```go
+func Serve(l net.Listener, handler Handler)error
+```
+> Serve 会接手监听器 l net.Lostener 收到的每一个连接，并为每一个连接创建一个新的服务 go 程。该 go 程会读取请求，然后调用 handler 回复请求。handler 参数一般会设为 nil,此时会使用 DefaultServeMux
 
+## func ListenAndServe
+```go
+func ListenAdnServe(addr string, handler Handler)error
+```
+> ListenAndServe 监听 TCP 地址 addr，并且会使用 handler 参数调用 Serve 函数处理接收到的链接。handler 参数一般会设为 nil, 此时会使用 DefaultServeMux
 
-
-
-
-
-
-
-
-
-
+## func ListenAndServeTLS
+```go
+func ListenAndServeTLS(addr string, certFile string, keyFile string, handler Handler)error
+```
+> ListenAndServeTLS函数和ListenAndServe函数的行为基本一致，除了它期望HTTPS连接之外。此外，必须提供证书文件和对应的私钥文件。如果证书是由权威机构签发的，certFile参数必须是顺序串联的服务端证书和CA证书。如果srv.Addr为空字符串，会使用":https"。
