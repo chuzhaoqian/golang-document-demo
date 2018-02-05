@@ -179,3 +179,42 @@ func (v Values)Del(key string)
 func (v Values)Encode()string
 ```
 > Encode 方法将 v 编码设为 url 编码格式("bar=baz&foo=quux")，编码时会以键进行排序。
+
+### Example
+```go
+package main
+
+import (
+	"fmt"
+	"net/url"
+)
+
+func main() {
+	rawurl := "htpp://www.lawuyou.com?name=czq&lang=go&other[]=JAVA&other[]=PHP"
+
+	escape := url.QueryEscape(rawurl)
+	fmt.Println(escape)
+
+	s, _ := url.QueryUnescape(escape)
+	fmt.Println(s)
+
+	u, _ := url.Parse(rawurl)
+	fmt.Println(u)
+	fmt.Println(u.RawQuery)
+	fmt.Println(u.String())
+	fmt.Println(u.IsAbs())
+
+	values := u.Query()
+	fmt.Println(values)
+
+	// values2 map[lang:[go] other[]:[JAVA PHP] htpp://www.lawuyou.com?name:[czq]]
+	//	values2, _ := url.ParseQuery(rawurl)
+	values2, _ := url.ParseQuery(u.RawQuery)
+	fmt.Println(values2)
+
+	// 空
+	//	fmt.Println(values2.Get("other"))
+	fmt.Println(values2.Get("lang"))
+	fmt.Println(values2.Encode())
+}
+```
