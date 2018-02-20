@@ -29,7 +29,7 @@ const (
 ## type ParseError
 ```go
 type ParseError struct {
-	Layout     string
+    Layout     string
     Value      string
     LayoutElem string
     ValueElem  string
@@ -52,7 +52,7 @@ type Weekday int
 
 ```go
 const (
-	Sunday Weekday = iota
+    Sunday Weekday = iota
     Monday
     Tuesday
     Wednesday
@@ -104,11 +104,13 @@ type Location struct {
 }
 ```
 > Location 代表一个（关联到某个时间点的）地点，以及该地点所在的时区
->> ```go
-var Local *Location = &localLoc
-var UTC *Location = &utcLoc
-```
->> Local代表系统本地，对应本地时区;UTC代表通用协调时间，对应零时区
+>
+>> var Local *Location = &localLoc
+>
+>> var UTC *Location = &utcLoc
+>
+> Local代表系统本地，对应本地时区;UTC代表通用协调时间，对应零时区
+
 
 ## func LoadLocation
 ```go
@@ -119,6 +121,8 @@ func LoadLocation(name string)(*Location, error)
 > 如果name是""或"UTC"，返回UTC；如果name是"Local"，返回Local；否则name应该是IANA时区数据库里有记录的地点名（该数据库记录了地点和对应的时区），如"America/New_York"
 >
 > LoadLocation函数需要的时区数据库可能不是所有系统都提供，特别是非Unix系统。此时LoadLocation会查找环境变量ZONEINFO指定目录或解压该变量指定的zip文件（如果有该环境变量）；然后查找Unix系统的惯例时区数据安装位置，最后查找$GOROOT/lib/time/zoneinfo.zip
+>
+> PRC Asia/Chongqing 北京时区
 
 ## func FixedZone
 ```go
@@ -389,12 +393,35 @@ func (t *Time) UnmarshalText(data []byte) (err error)
 ```
 > UnmarshalText实现了encoding.TextUnmarshaler接口。时间被期望采用RFC 3339格式
 
+## Example
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	t := time.Now()
+	fmt.Println(t)
+	fmt.Println(t.Location())
+
+	loc, _ := time.LoadLocation("PRC")
+	t2 := time.Now().In(loc)
+	fmt.Println(t2)
+	fmt.Println(t2.Unix())
+	fmt.Println(t2.Location())
+}
+```
+
 ## type Duration
 ```go
 type Duration int64
 ```
 > Duration类型代表两个时间点之间经过的时间，以纳秒为单位。可表示的最长时间段大约290年
->> ```go
+
+```go
 const (
     Nanosecond  Duration = 1
     Microsecond          = 1000 * Nanosecond
@@ -404,7 +431,7 @@ const (
     Hour                 = 60 * Minute
 )
 ```
-
+ 
 ## func ParseDuration
 ```go
 func ParseDuration(s string)(Duration, error)
