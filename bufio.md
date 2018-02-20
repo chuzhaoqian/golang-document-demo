@@ -43,7 +43,7 @@ func NewReader(rd io.Reader)*Reader
 ```go
 func NewReaderSize(rd io.Reader, size int)*Reader
 ```
-> NewReaderSize 创建一个具有最小有 size 尺寸的缓冲、从 rd io.Reader 读取的 *Reader。如果参数 rd io.Reader 已经是一个具有足够大缓冲的 *Reader 类型值，会返回 rd io.RReader。
+> NewReaderSize 创建一个具有最小有 size 尺寸的缓冲、从 rd io.Reader 读取的 *Reader。如果参数 rd io.Reader 已经是一个具有足够大缓冲的 *Reader 类型值，会返回 rd io.Reader。
 
 ### Example
 ```go

@@ -69,7 +69,7 @@ type ScanState interface {
 	Read(buf []byte)(n int, err error)
 }
 ```
-> ScanState 代表一个将床底给 Scanner 接口的 Scan 方法的扫描环境。 Scan 函数中，可以进行一次一个 rune 的扫描，或者使用 Token 方法获得下一个 token (比如空白分隔的 token)
+> ScanState 代表一个将传递给 Scanner 接口的 Scan 方法的扫描环境。 Scan 函数中，可以进行一次一个 rune 的扫描，或者使用 Token 方法获得下一个 token (比如空白分隔的 token)
 
 ## type Scanner
 ```go
