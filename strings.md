@@ -3,6 +3,7 @@
 import "strings"
 ```
 > strings 实现了用于操作字符串的简单函数
+>> 说明：这里说的字符，值得是 rune 类型，即一个 UTF-8 字符（Unicode 代码点）
 
 ## func EqualFold
 ```go
