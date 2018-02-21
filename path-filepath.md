@@ -57,7 +57,7 @@ func Join(elem ...string)string
 ```
 > Join 函数可以将任意数量的路径元素放入一个单一路径里，会根据需要添加路径分隔符。结果是经过简化的，所有的空字符串元素会被忽略。
 
-## func Fr omSlash
+## func FromSlash
 ```go
 func FromSlash(path string)string
 ```
@@ -120,6 +120,28 @@ func Glob(pattern string)(natches []string, err error)
 ## type WalkFunc
 ## func Walk 
 ## func HasPrefix
+
+## Example
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+)
+
+func main() {
+	// 1
+	fp := os.Args[0]
+	fmt.Println("文件路径", fp)
+	fmt.Println(filepath.Dir(fp))
+
+	// 2
+	fmt.Println(filepath.Abs("."))
+	// 1 和 2 在编辑器中run 会结果不同
+}
+```
 
 
 
