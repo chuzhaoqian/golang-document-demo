@@ -42,28 +42,47 @@ func LookPath(file string)(string, error)
 ```
 > 在环境变量 PATH 指定的目录中搜索可执行的文件，如file中有斜杠，则只在当前目录搜索。返回完整路径或者相对于当前目录的一个相对路径。
 
+
+## Example
+```go
+package main
+
+import (
+	"fmt"
+	"os/exec"
+)
+
+func main() {
+	lspath, err := exec.LookPath("go")
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(lspath)
+}
+```
+
 ## type Cmd
 ```go
 type Cmd struct {
-	// Path 是将要执行的命令的路径
-	// 该字段不能为空，如为相对路径会相对 Dir 字段
-	Path string
-	// Arag 保管命令的参数，包括命令名作为第一个参数；如果为空切片或nil，相当于无参数命令
-	Args []string
-	// Enc 指定进程的环境，如为 nil，则是在当前进程的环境下执行
-	Env []string
-	// Dir 指定命令的工作目录。如为空字符串，会在调用者的进程当前目录下执行
-	Dir string
-	// Stdin指定进程的标准输入，如为nil，进程会从空设备读取（os.DevNull）
-	Stdin io.Reader
-	// Sedout 和 Stderr 指定进程的标准输出和标准错误输出
-	// 如果任一个为nil，Run方法会将对应的文件描述符关联到空设备（os.DevNull）
-	// 如果两个字段相同，同一时间最多有一个线程可以写入。
-	Stdout io.Writer
-	Stderr io.Writer
-	// ExtraFiles指定额外被新进程继承的已打开文件流，不包括标准输入、标准输出、标准错误输出。
-	ExtraFiles []*os.File
-	// SysProcAttr保管可选的、各操作系统特定的sys执行属性。
+    // Path 是将要执行的命令的路径
+    // 该字段不能为空，如为相对路径会相对 Dir 字段
+    Path string
+    // Arag 保管命令的参数，包括命令名作为第一个参数；如果为空切片或nil，相当于无参数命令
+    Args []string
+    // Enc 指定进程的环境，如为 nil，则是在当前进程的环境下执行
+    Env []string
+    // Dir 指定命令的工作目录。如为空字符串，会在调用者的进程当前目录下执行
+    Dir string
+    // Stdin指定进程的标准输入，如为nil，进程会从空设备读取（os.DevNull）
+    Stdin io.Reader
+    // Sedout 和 Stderr 指定进程的标准输出和标准错误输出
+    // 如果任一个为nil，Run方法会将对应的文件描述符关联到空设备（os.DevNull）
+    // 如果两个字段相同，同一时间最多有一个线程可以写入。
+    Stdout io.Writer
+    Stderr io.Writer
+    // ExtraFiles指定额外被新进程继承的已打开文件流，不包括标准输入、标准输出、标准错误输出。
+    ExtraFiles []*os.File
+    // SysProcAttr保管可选的、各操作系统特定的sys执行属性。
     // Run方法会将它作为os.ProcAttr的Sys字段传递给os.StartProcess函数。
     SysProcAttr *syscall.SysProcAttr
     // Process是底层的，只执行一次的进程。
