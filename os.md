@@ -3,6 +3,7 @@
 import "os"
 ```
 > os 提供了不依赖平台的操作系统函数接口。设计为 Unix 风格，错误处理是 go 风格；失败的调用会返回错误值而非错误码。
+>> os 依赖于 syscall。优先使用 os 中提供的功能，而不是 syscall
 
 ```go
 const (
