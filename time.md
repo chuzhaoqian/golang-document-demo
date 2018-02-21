@@ -507,6 +507,33 @@ func (t *Timer)Stop()bool
 ```
 > Stop停止Timer的执行。如果停止了t会返回真；如果t已经被停止或者过期了会返回假。Stop不会关闭通道t.C，以避免从该通道的读取不正确的成功
 
+## Example
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	timer1 := time.NewTimer(time.Second * 2)
+	<-timer1.C
+	fmt.Println("Timer 1 expired")
+
+	timer2 := time.NewTimer(time.Second)
+	go func() {
+		<-timer2.C
+		fmt.Println("Timer 2 expired")
+	}()
+	stop2 := timer2.Stop()
+
+	if stop2 {
+		fmt.Println("Timer 2 stopped")
+	}
+}
+```
+
 ## type Ticker
 ```go
 type Ticker struct {
@@ -534,6 +561,28 @@ func Sleep(d Duration)
 ```
 > Sleep阻塞当前go程至少d代表的时间段。d<=0时，Sleep会立刻返回
 
+## Example
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	ticker := time.NewTicker(time.Millisecond * 500)
+	go func() {
+		for t := range ticker.C {
+			fmt.Println("Tick at", t)
+		}
+	}()
+	time.Sleep(time.Millisecond * 1600)
+	ticker.Stop()
+	fmt.Println("Ticker stopped")
+}
+```
+
 ## func After
 ```go
 func After(d Duration)<-chan Time
@@ -545,3 +594,30 @@ func After(d Duration)<-chan Time
 func Tick(d Duration) <-chan Time
 ```
 > Tick是NewTicker的封装，只提供对Ticker的通道的访问。如果不需要关闭Ticker，本函数就很方便
+
+## Example
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	tick := time.Tick(1e8)
+	boom := time.After(5e8)
+	for {
+		select {
+		case <-tick:
+			fmt.Println("tick.")
+		case <-boom:
+			fmt.Println("BOOM!")
+			return
+		default:
+			fmt.Println("    .")
+			time.Sleep(5e7)
+		}
+	}
+}
+```
