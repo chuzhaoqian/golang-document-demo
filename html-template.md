@@ -26,7 +26,7 @@ const (
 	ErrEndContext
 	// 调用不存在模板时导致 ErrNoSuchTemplate
 	// {{define "main"}}<div {{template "attrs"}}&rt;{{end}}
-    // {{define "attrs"}}href="{{.URL}}"{{end}}
+	// {{define "attrs"}}href="{{.URL}}"{{end}}
 	ErrNoSuchTemplate
 	// 不能计算输出位置的上下文环境时，导致 ErrOutputContext
 	ErrOutputContext
@@ -34,13 +34,13 @@ const (
 	ErrPartialCharset
 	// 部分转移序列尚未支持
 	// 示例：
-    //   <script>alert("\{{.X}}")</script&rt;
-    // 讨论：
-    //   html/template包不支持紧跟在反斜杠后面的action
-    //   这一般是错误的，有更好的解决方法，例如：
-    //     <script>alert("{{.X}}")</script&rt;
-    //   可以工作，如果{{.X}}是部分转义序列，如"xA0"，
-    //   可以将整个序列标记为安全文本：JSStr(`\xA0`)
+	//   <script>alert("\{{.X}}")</script&rt;
+	// 讨论：
+	//   html/template包不支持紧跟在反斜杠后面的action
+	//   这一般是错误的，有更好的解决方法，例如：
+	//     <script>alert("{{.X}}")</script&rt;
+	//   可以工作，如果{{.X}}是部分转义序列，如"xA0"，
+	//   可以将整个序列标记为安全文本：JSStr(`\xA0`)
 	ErrPartialEscape
 	// range 循环的重入口错误。
 	ErrRangeLoopReentry
