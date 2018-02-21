@@ -52,7 +52,7 @@ const (
 ```
 
 ```go
-const DefaultMaxHeaderBytes = 1 << 20 1M
+const DefaultMaxHeaderBytes = 1 << 20 //1M
 ```
 > DefaultMaxHeaderBytes 是HTTP 请求的头域最大允许长度。可以通过设置Server.MaxHeaderBytes 字段来覆盖
 
@@ -142,6 +142,20 @@ func CanonicalHeaderKey(s string)string
 ```
 > CanonicalHeaderKey 函数返回头域(表示为 Header 类型)的键 s 的规划化格式。规划化过程中让单词首字母和 ‘-’ 后的第一个字母大写，其余字母小写。例如，"accept-encoding"规范化为"Accept-Encoding"。
 
+## Example
+```go
+package main
+
+import (
+	"fmt"
+	"net/http"
+)
+
+func main() {
+	fmt.Println(http.CanonicalHeaderKey("accept-encoding"))
+}
+```
+
 ## func DetectContentType
 ```go
 func DetectContentType(data []byte)string
@@ -165,6 +179,22 @@ func ParseTime(text string)(t time.Time, err error)
 func StatusText(code int)string
 ```
 > StatusText 返回 HTTP 状态码 code 对应的文本，如220对应"OK"。如果 code 是未知的状态码，会返回""。
+
+## Example
+```go
+package main
+
+import (
+	"fmt"
+	"net/http"
+)
+
+func main() {
+	fmt.Println(http.StatusText(200))
+	fmt.Println(http.StatusText(404))
+}
+```
+
 
 ## type ConnState
 ```go
@@ -270,7 +300,7 @@ func (c *Cookie)String()string
 ## type CookieJar
 ```go
 type CookieJar interface {
-	// SetCookies管理从u的回复中收到的cookie
+    // SetCookies管理从u的回复中收到的cookie
     // 根据其策略和实现，它可以选择是否存储cookie
     SetCookies(u *url.URL, cookies []*Cookie)
     // Cookies返回发送请求到u时应使用的cookie
@@ -283,21 +313,21 @@ type CookieJar interface {
 ## type Request 
 ```go
 type Request struct {
-	// Method 指定 HTTP 方法 (GET、POST、PUT等)，“”代表 GET
-	Method string
-	// URL 在服务器端表示被请求的 URI,在客户端表示要访问的 URL
-	// 在服务端，URL 字段是解析请求行的 URI (保存在 RequestURI字段)得到的
-	// 对于大多数请求来说，除了 Path 和 RawQuery 之外的字段都是空字符串。
-	// 
-	// 在客户端，URL 的 Host 字段指定了要链接的服务器，
-	// 而 Request 的 Host 字段 (可选的) 指定要发送的 HTTP 请求的 Host 头的值。
-	URL *url.URL 
-	// 接收到的请求的协议版本。本包生产的 Request 总是使用 HTTP/1.1
-	Proto string	// "HTTP/1.0"
-	ProtoMajor int	// 1
-	ProtoMinor int	// 0
-	// Header 字段用来表示 HTTP 请求的头域。如果头域(多行键值对格式)为：
-	//	accept-encoding: gzip, deflate
+    // Method 指定 HTTP 方法 (GET、POST、PUT等)，“”代表 GET
+    Method string
+    // URL 在服务器端表示被请求的 URI,在客户端表示要访问的 URL
+    // 在服务端，URL 字段是解析请求行的 URI (保存在 RequestURI字段)得到的
+    // 对于大多数请求来说，除了 Path 和 RawQuery 之外的字段都是空字符串。
+    // 
+    // 在客户端，URL 的 Host 字段指定了要链接的服务器，
+    // 而 Request 的 Host 字段 (可选的) 指定要发送的 HTTP 请求的 Host 头的值。
+    URL *url.URL 
+    // 接收到的请求的协议版本。本包生产的 Request 总是使用 HTTP/1.1
+    Proto string	// "HTTP/1.0"
+    ProtoMajor int	// 1
+    ProtoMinor int	// 0
+    // Header 字段用来表示 HTTP 请求的头域。如果头域(多行键值对格式)为：
+    //	accept-encoding: gzip, deflate
     //	Accept-Language: en-us
     //	Connection: keep-alive
     // 则：
@@ -306,68 +336,68 @@ type Request struct {
     //		"Accept-Language": {"en-us"},
     //		"Connection": {"keep-alive"},
     //	}
-	// HTTP 规定头域的键名是大小写敏感的，请求的解析器通过格式化头域的键名来实现这点
-	// 在客户端的请求，可能会被自动添加或重写 Header 中的特定的头
-	Header Header
-	// Body 是请求的主体
-	//
-	// 在客户端，如果 Body 是 nil 表示该请求没有主体请求 GET 请求
-	// Client 的 Transport 字段会负责调用 Body 的 Close 方法
-	//
-	// 在服务器端，Body 字段总是非 nil 的；但在没有主体时，读取 Body 会立刻返回 EOF
-	// Server 会关闭请求的主体，ServeHTTP 处理不需要关闭 Body 字段
-	Body io.ReadCloser
-	// ContentLength 记录相关内容的长度
-	// 如果为 -1 表示长度未知，如果 >= 0 表示可以从 Body 字段读取 ContentLength 字节数据
-	// 在客户端，如果 Body 非 nil 而字段为 0，表示不知道 Body 的长度
-	ContentLength int64
-	// TransferEncoding 按从最外到最里的顺序列出传输编码，空切片表示 “identity” 编码
-	// 本字段一般会被忽略，当发送或接受请求时，会自动添加或移除"chunked"传输编码。
-	TransferEncoding []string
-	// 在服务端指定是否在回复请求后关闭连接
-	// 在客户端指定是否在发送请求后关闭连接
-	Close bool
-	// 在服务端，Host 指定 URL 会在其上寻找资源主机
-	// 根据RFC 2616，该值可以是Host头的值，或者URL自身提供的主机名。
+    // HTTP 规定头域的键名是大小写敏感的，请求的解析器通过格式化头域的键名来实现这点
+    // 在客户端的请求，可能会被自动添加或重写 Header 中的特定的头
+    Header Header
+    // Body 是请求的主体
+    //
+    // 在客户端，如果 Body 是 nil 表示该请求没有主体请求 GET 请求
+    // Client 的 Transport 字段会负责调用 Body 的 Close 方法
+    //
+    // 在服务器端，Body 字段总是非 nil 的；但在没有主体时，读取 Body 会立刻返回 EOF
+    // Server 会关闭请求的主体，ServeHTTP 处理不需要关闭 Body 字段
+    Body io.ReadCloser
+    // ContentLength 记录相关内容的长度
+    // 如果为 -1 表示长度未知，如果 >= 0 表示可以从 Body 字段读取 ContentLength 字节数据
+    // 在客户端，如果 Body 非 nil 而字段为 0，表示不知道 Body 的长度
+    ContentLength int64
+    // TransferEncoding 按从最外到最里的顺序列出传输编码，空切片表示 “identity” 编码
+    // 本字段一般会被忽略，当发送或接受请求时，会自动添加或移除"chunked"传输编码。
+    TransferEncoding []string
+    // 在服务端指定是否在回复请求后关闭连接
+    // 在客户端指定是否在发送请求后关闭连接
+    Close bool
+    // 在服务端，Host 指定 URL 会在其上寻找资源主机
+    // 根据RFC 2616，该值可以是Host头的值，或者URL自身提供的主机名。
     // Host的格式可以是"host:port"。
     //
     // 在客户端，请求的Host字段（可选地）用来重写请求的Host头。
     // 如过该字段为""，Request.Write方法会使用URL字段的Host。
-	Host string
-	// Form 是解析好的表单数据，包括 URL 字段的 query 参数和 POST 或 PUT 的表单数据
-	// 本地端只有在调用 ParseForm 后才有效
-	// 客户端会忽略请求中的本字段而使用 Body 替代
-	Form url.Values
-	// PostForm 是解析好的 POST 或 PUT 的表单数据
-	// 本字段只有在调用 ParseForm 后才有效。
-	// 在客户端会忽略请求中本字段而使用 Body 替代
-	PostForm url.Values 
-	// MultipartForm 是解析好的多部件表单，包括上传的文件
-	// 只有在调用 ParseMultipartForm 后才有效
-	// 在客户端，会忽略请求中的本字段而使用 Body 替代
-	MultipartForm *multipart.Form
-	// 很好有客户端和服务端支持
-	Trailer Header
-	// RemoteAddr 允许 HTTP 服务器和其他软件记录该请求的来源地址，一般用于日志
-	// 不是 ReadRequest 函数填写的，也没有定义格式
-	// HTTP 服务器会在调用处理器之前设置 RemoteAddr 为 “IP:port” 格式的地址
-	// 客户端会忽略请求中的 RemoteAddr
-	RemoteAddr string
-	// RequestURI 是被客户端发送到服务端的请求的请求行中未修改的请求 URI
-	// 一般应使用 URI 字段，在客户端设置请求的本字段会导致错误
-	RequestURI string
-	// TLS 允许 HTTP 服务器和其他软件记录接收到该请求的 TLS 链接的信息
-	// 不是 ReadRequest 函数填写的
-	// 对弃用了 TLS 的链接，本包的 HTTP 服务器会在调用处理器之前设置 TLS 字段， 否则将设置 TLS 为 nil
-	// 客户端会忽略请求中的 TLS 字段
-	TLS *tls。ConnectionState
+    Host string
+    // Form 是解析好的表单数据，包括 URL 字段的 query 参数和 POST 或 PUT 的表单数据
+    // 本地端只有在调用 ParseForm 后才有效
+    // 客户端会忽略请求中的本字段而使用 Body 替代
+    Form url.Values
+    // PostForm 是解析好的 POST 或 PUT 的表单数据
+    // 本字段只有在调用 ParseForm 后才有效。
+    // 在客户端会忽略请求中本字段而使用 Body 替代
+    PostForm url.Values 
+    // MultipartForm 是解析好的多部件表单，包括上传的文件
+    // 只有在调用 ParseMultipartForm 后才有效
+    // 在客户端，会忽略请求中的本字段而使用 Body 替代
+    MultipartForm *multipart.Form
+    // 很少有客户端和服务端支持
+    Trailer Header
+    // RemoteAddr 允许 HTTP 服务器和其他软件记录该请求的来源地址，一般用于日志
+    // 不是 ReadRequest 函数填写的，也没有定义格式
+    // HTTP 服务器会在调用处理器之前设置 RemoteAddr 为 “IP:port” 格式的地址
+    // 客户端会忽略请求中的 RemoteAddr
+    RemoteAddr string
+    // RequestURI 是被客户端发送到服务端的请求的请求行中未修改的请求 URI
+    // 一般应使用 URI 字段，在客户端设置请求的本字段会导致错误
+    RequestURI string
+    // TLS 允许 HTTP 服务器和其他软件记录接收到该请求的 TLS 链接的信息
+    // 不是 ReadRequest 函数填写的
+    // 对弃用了 TLS 的链接，本包的 HTTP 服务器会在调用处理器之前设置 TLS 字段， 否则将设置 TLS 为 nil
+    // 客户端会忽略请求中的 TLS 字段
+    TLS *tls。ConnectionState
 }
 ```
 > Request 类型代表一个服务端接收到的或者客户端发送的 HTTP 请求。Request 各字段的意义和用途在服务端和客户端是不同的。
 
 ## func NewRequest
 ```go
-func NewRequest(method, urlStr string,body io.Reader)(*Request, error)
+func NewRequest(method, urlStr string, body io.Reader)(*Request, error)
 ```
 > NewRequest 使用指定的方法、网址和可选的主题创建并返回一个新的 *Request。如果 body 参数实现了 io.Closer 接口，Request 返回值的 Body 字段会被设置为 body，并会被 Client 类型的 Do、Post 和 PostForm 方法以及 Transport.RoundTrip 方法关闭。
 
@@ -464,32 +494,32 @@ func (r *Request)MultiparReader()(*multipart.Reader, error)
 ## type Response
 ```go
 type Response struct {
-	Status string // 例如"200 OK"
-	StatusCode	// 如 200
-	Proto	// 如 "HTTP/1.0"
-	ProtoMajor int
-	ProtoMinor int
-	// Header 保管头域的键值对
-	// 使用本函数代替ParseMultipartForm，可以将r.Body作为流处理。
-	// 被本结构体中的其他字段复制保管的头（如ContentLength）会从Header中删掉。
-	Header Header
-	// Body 代表回复的主体
-	// Client 类型和 Transpor 类型会保证 Body 字段总是非 nil 的，即使回复没有主体或主体长度为0。
-	// 关闭主体是调用者的责任
-	// 如果服务端采用"chunked"传输编码发送的回复，Body字段会自动进行解码。
-	Body io.ReadCloser
-	// ContentLength 记录相关内容长度
-	// 其值为-1表示长度未知（采用chunked传输编码）
-	// 除非对应的Request.Method是"HEAD"，其值>=0表示可以从Body读取的字节数
-	ContentLength int64
-	// TransferEncoding按从最外到最里的顺序列出传输编码，空切片表示"identity"编码。
-	TransferEncoding []string
-	// Close 记录头域是否指定应在读取完主体后关闭连接
-	// 该值是给客户端的建议，Response.Write方法的ReadResponse函数都不会关闭连接。
-	Close bool
-	// Trailer字段保存和头域相同格式的trailer键值对，和Header字段相同类型
+    Status string // 例如"200 OK"
+    StatusCode	// 如 200
+    Proto	// 如 "HTTP/1.0"
+    ProtoMajor int
+    ProtoMinor int
+    // Header 保管头域的键值对
+    // 使用本函数代替ParseMultipartForm，可以将r.Body作为流处理。
+    // 被本结构体中的其他字段复制保管的头（如ContentLength）会从Header中删掉。
+    Header Header
+    // Body 代表回复的主体
+    // Client 类型和 Transpor 类型会保证 Body 字段总是非 nil 的，即使回复没有主体或主体长度为0。
+    // 关闭主体是调用者的责任
+    // 如果服务端采用"chunked"传输编码发送的回复，Body字段会自动进行解码。
+    Body io.ReadCloser
+    // ContentLength 记录相关内容长度
+    // 其值为-1表示长度未知（采用chunked传输编码）
+    // 除非对应的Request.Method是"HEAD"，其值>=0表示可以从Body读取的字节数
+    ContentLength int64
+    // TransferEncoding按从最外到最里的顺序列出传输编码，空切片表示"identity"编码。
+    TransferEncoding []string
+    // Close 记录头域是否指定应在读取完主体后关闭连接
+    // 该值是给客户端的建议，Response.Write方法的ReadResponse函数都不会关闭连接。
+    Close bool
+    // Trailer字段保存和头域相同格式的trailer键值对，和Header字段相同类型
     Trailer Header
-	// Request是用来获取此回复的请求
+    // Request是用来获取此回复的请求
     // Request的Body字段是nil（因为已经被用掉了）
     // 这个字段是被Client类型发出请求并获得回复后填充的
     Request *Request
