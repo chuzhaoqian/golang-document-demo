@@ -22,6 +22,20 @@ func MatchString(pattern string, s string) (matched bool, err error)
 ```
 > MatchString类似Match，但匹配对象是字符串。
 
+## Example
+```go
+package main
+
+import (
+	"fmt"
+	"regexp"
+)
+
+func main() {
+	fmt.Println(regexp.MatchString("c([a-z]+)q", "czq"))
+}
+```
+
 ## func MatchReader
 ```go
 func MatchReader(pattern string, r io.RuneReader) (matched bool, err error)
@@ -41,6 +55,21 @@ type Regexp struct {
 func Compile(expr string) (*Regexp, error)
 ```
 > Compile解析并返回一个正则表达式。如果成功返回，该Regexp就可用于匹配文本。
+
+## Example
+```go
+package main
+
+import (
+	"fmt"
+	"regexp"
+)
+
+func main() {
+	expr, _ := regexp.Compile("c([a-z]+)q")
+	fmt.Println(expr)
+}
+```
 
 ## func CompilePOSIX
 ```go
@@ -126,11 +155,32 @@ func (re *Regexp)FindIndex(b []byte)(loc []int)
 ```
 > 返回保管正则表达式re在b中的最左侧的一个匹配结果的起止位置的切片（显然len(loc)==2）。匹配结果可以通过起止位置对b做切片操作得到：b[loc[0]:loc[1]]。如果没有匹配到，会返回nil。
 
-## func (*Regexp)findStringIndex
+## func (*Regexp)FindStringIndex
 ```go
 func (re *Regexp)FindStringIndex(s string)(loc []int)
 ```
 > 返回保管正则表达式re在b中的最左侧的一个匹配结果的起止位置的切片（显然len(loc)==2）。匹配结果可以通过起止位置对b做切片操作得到：b[loc[0]:loc[1]]。如果没有匹配到，会返回nil。
+
+## Example
+```go
+package main
+
+import (
+	"fmt"
+	"regexp"
+)
+
+func main() {
+	r, _ := regexp.Compile("c([a-z]+)q")
+	fmt.Println(r)
+
+	s := r.FindString("czq")
+	fmt.Println(s)
+
+	loc := r.FindStringIndex("czq czq")
+	fmt.Println(loc)
+}
+``` 
 
 ## func (*Regexp)FindReaderIndex
 ```go
@@ -156,6 +206,26 @@ func (re *Regexp)FindSubmatchIndex(b []byte)[]int
 ```
 > 返回一个保管正则表达式re在b中的最左侧的一个匹配结果以及（可能有的）分组匹配的结果的起止位置的切片。匹配结果和分组匹配结果可以通过起止位置对b做切片操作得到：b[loc[2*n]:loc[2*n+1]]。如果没有匹配到，会返回nil。
 
+## Example
+```go
+package main
+
+import (
+	"fmt"
+	"regexp"
+)
+
+func main() {
+	r, _ := regexp.Compile("c([a-z]+)q")
+	str3 := "czq czq czq"
+	stes := r.FindStringSubmatch(str3)
+	fmt.Println(stes) // [czq z]
+
+	ints := r.FindStringSubmatchIndex(str3)
+	fmt.Println(ints) // [0 3 1 2]
+}
+```
+
 ## func (*Regexp)FindStringSubmatchIndex
 ## func (*Regexp)FindReaderSubmatchIndex
 
@@ -171,6 +241,30 @@ func (re *Regexp)FindAllString(s string, n int)[]string
 ```
 > 返回保管正则表达式re在b中的所有不重叠的匹配结果的[]string切片。如果没有匹配到，会返回nil。
 
+## Example
+```go
+package main
+
+import (
+	"fmt"
+	"regexp"
+)
+
+func main() {
+	r, _ := regexp.Compile("c([a-z]+)q")
+	str3 := "czq czq czq"
+
+	strs := r.FindAllString(str3, 0)
+	fmt.Println(strs) // []
+
+	strs = r.FindAllString(str3, 6)
+	fmt.Println(strs) // [czq czq czq]
+
+	strs = r.FindAllString(str3, -1)
+	fmt.Println(strs) // [czq czq czq]
+}
+```
+
 ## func (*Regexp)FindAllIndex
 ```go
 func (re *Regexp)FindAllIndex(b []byte, n int)[][]int
@@ -182,6 +276,33 @@ func (re *Regexp)FindAllIndex(b []byte, n int)[][]int
 func (re *Regexp)FindAllStringIndex(s string, n int)[][]int
 ```
 > 返回保管正则表达式re在b中的所有不重叠的匹配结果的起止位置的切片。如果没有匹配到，会返回nil。
+
+## Example
+```go
+package main
+
+import (
+	"fmt"
+	"regexp"
+)
+
+func main() {
+	r, _ := regexp.Compile("c([a-z]+)q")
+	str3 := "czq czq czq"
+
+	ints := r.FindAllStringSubmatchIndex(str3, 0)
+	fmt.Println(ints) // []
+	if ints == nil {	// ok
+		fmt.Println("nil")	
+	}
+
+	ints = r.FindAllStringSubmatchIndex(str3, 6)
+	fmt.Println(ints) // [[0 3 1 2] [4 7 5 6] [8 11 9 10]]
+
+	ints = r.FindAllStringSubmatchIndex(str3, -1)
+	fmt.Println(ints) // [[0 3 1 2] [4 7 5 6] [8 11 9 10]]
+}
+```
 
 ## func (*Regexp)FindAllSubmatch
 ```go
