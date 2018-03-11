@@ -147,3 +147,24 @@ func (c *Cmd)Output()([]byte, error)
 func (c *Cmd) CombinedOutput() ([]byte, error)
 ```
 > 执行命令并返回标准输出和错误输出合并的切片。
+
+## Example
+```go
+package main
+
+import (
+	"bytes"
+	"fmt"
+	"os/exec"
+	"strings"
+)
+
+func main() {
+	cmd := exec.Command("go", "help")
+	cmd.Stdin = strings.NewReader("some input")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Run()
+	fmt.Printf("in all caps: %q\n", out.String())
+}
+```
